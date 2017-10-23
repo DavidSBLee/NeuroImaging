@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Author: David SB Lee
+# Author: 
 # First Compiled: 8/29/17
 # Last Updated: 10/13/2017
 # Updated Content: Changed run-1 ----> run-01
