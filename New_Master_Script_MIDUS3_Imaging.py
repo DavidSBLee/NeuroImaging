@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+# Author: David SB Lee
 # First Compiled: 10/15/2017
 # Last Updated: 10/15/2017
 # Updated Content: (10/15/2017) Organization

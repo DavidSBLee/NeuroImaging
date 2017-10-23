@@ -1,8 +1,9 @@
 #!/bin/python
 
+# Author: # Author: David SB Lee
 # First Compiled: 10/16/2017
-# Last Updated: 
-# Updated Content: () 
+# Last Updated: 10/20/2017
+# Updated Content: (10/20/2017) Added Authorship
 # Purpose: Skull Strip and Mask Creation
 
 # Things to change when runing on different data set

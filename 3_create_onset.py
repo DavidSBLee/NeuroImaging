@@ -1,5 +1,11 @@
 #!/usr/bin/env python
 
+# Author: David SB Lee
+# First Compiled: 8/29/17
+# Last Updated: 10/20/2017
+# Updated Content: Added authorship
+# Purpose: Create onsetfiles from E-prime.txt files
+
 import glob
 import os
 
