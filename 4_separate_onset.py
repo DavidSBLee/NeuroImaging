@@ -60,7 +60,7 @@ def block_one_data_manipulation(temporarySmallPath, subNum, outfile):
 	df1.loc[(df1['Response_Time_Face'] < 0 ) | (df1['Response_Time_Face'].isnull()), 'Response_Time_Face'] = 'NaN'
 	# Remove unnecessary blocks column
 	del df1['Blocks']
-	df2 = pd.read_csv(temporarySmallPath + '' + subNum + '-temporary-01.tsv', sep='\t',) # usecols = ['columnname'] could be useful here
+	df2 = pd.read_csv(temporarySmallPath + subNum + '-temporary-01.tsv', sep='\t',) # usecols = ['columnname'] could be useful here
 	# cut the index
 	df3 = df2.ix[:29]
 	# Put two csvs together
@@ -78,7 +78,7 @@ def block_two_data_manipulation(temporarySmallPath, subNum, outfile):
 	df1.loc[(df1['Response_Time_Face'] < 0 ) | (df1['Response_Time_Face'].isnull()), 'Response_Time_Face'] = 'NaN'
 	# Remove unnecessary blocks column
 	del df1['Blocks']
-	df2 = pd.read_csv(temporarySmallPath + '' + subNum + '-temporary-02.tsv', sep='\t')
+	df2 = pd.read_csv(temporarySmallPath + subNum + '-temporary-02.tsv', sep='\t')
 	#df3 = df2.drop(df2.index[[0,1,2,3,4]])
 	#df4 = df3.drop(df3[:-3])
 	#df2 = df2[df2.Blocks != 1]
@@ -99,7 +99,7 @@ def block_three_data_manipulation(temporarySmallPath, subNum, outfile):
 	df1.loc[(df1['Response_Time_Face'] < 0 ) | (df1['Response_Time_Face'].isnull()), 'Response_Time_Face'] = 'NaN'
 	# Remove unnecessary blocks column
 	del df1['Blocks']
-	df2 = pd.read_csv(temporarySmallPath + '' + subNum + '-temporary-03.tsv', sep='\t')
+	df2 = pd.read_csv(temporarySmallPath + subNum + '-temporary-03.tsv', sep='\t')
 	df3 = df2.ix[60:89]
 	df3 = df3.reset_index(drop=True)
 	df5 = pd.concat([df1, df3], axis=1)
@@ -145,39 +145,40 @@ for tsv in tsvPath:
 		with open(tsv, 'rU') as tsvFile, open(temporarySmallPath + 'sub-' + subNum + '_computed-01.tsv', 'wb') as newTsv:
 			calc_write_values(newTsv, tsvFile, 1)
 
-		with open(tsv, 'rU') as tsvFile, open(temporarySmallPath + '' + subNum + '-temporary-01.tsv', 'wb') as newTsv:
+		with open(tsv, 'rU') as tsvFile, open(temporarySmallPath + subNum + '-temporary-01.tsv', 'wb') as newTsv:
 			reader_and_writer(newTsv, tsvFile)
-			block_one_data_manipulation(temporarySmallPath, subNum, outfile)
+		block_one_data_manipulation(temporarySmallPath, subNum, outfile)
 
 		### Creating Onset for block 2 ###
 
 		with open(tsv, 'rU') as tsvFile, open(temporarySmallPath + 'sub-' + subNum + '_computed-02.tsv', 'wb') as newTsv:
 			calc_write_values(newTsv, tsvFile, 2)
 
-		with open(tsv, 'rU') as tsvFile, open(temporarySmallPath + '' + subNum + '-temporary-02.tsv', 'wb') as newTsv:
+		with open(tsv, 'rU') as tsvFile, open(temporarySmallPath + subNum + '-temporary-02.tsv', 'wb') as newTsv:
 			reader_and_writer(newTsv, tsvFile)
-			block_two_data_manipulation(temporarySmallPath, subNum, outfile)
+		block_two_data_manipulation(temporarySmallPath, subNum, outfile)
 
 		### Creating Onset for block 3 ###
 
 		with open(tsv, 'rU') as tsvFile, open(temporarySmallPath + 'sub-' + subNum + '_computed-03.tsv', 'wb') as newTsv:
 			calc_write_values(newTsv, tsvFile, 3)
 
-		with open(tsv, 'rU') as tsvFile, open(temporarySmallPath + '' + subNum + '-temporary-03.tsv', 'wb') as newTsv:
+		with open(tsv, 'rU') as tsvFile, open(temporarySmallPath + subNum + '-temporary-03.tsv', 'wb') as newTsv:
 			reader_and_writer(newTsv, tsvFile)
-			block_three_data_manipulation(temporarySmallPath, subNum, outfile)
+		block_three_data_manipulation(temporarySmallPath, subNum, outfile)
 
 
 print '----------Deleting temporary and computed files----------'
 for small in smallPath:
 	os.remove(small)
 
+"""
 Useful Examples
 
 # pandas reddit page for columns
 # https://www.reddit.com/r/learnpython/comments/44p1bi/how_do_you_remove_a_column_of_a_csv_file/
 
-"""
+
 singleOnsetFile = set([int(tsvs.split('/')[5][4:7]) for tsvs in tsvPath])
 print singleOnsetFile
 
@@ -192,9 +193,8 @@ for onsets in singleOnsetFile:
 		print "Onsets exist already"
 
 	if onsets not in multipleOnsetFiles:
-		print "Converting..."
-"""
-"""
+
+
 fruit_wanted = ['fruit'] + ["'%s'" % f for f in fruit_wanted.split(',')]
 outfile = csv.DictWriter(open(outputfile, 'wb'), fieldnames=fruit_wanted)
 fruit_wanted = set(fruit_wanted)
