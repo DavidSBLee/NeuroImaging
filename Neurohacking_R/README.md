@@ -1,5 +1,5 @@
-The scripts are from a Course from Coursera:
+The scripts are adapted from the "Neurohacking in R" Coursera course:
 https://www.coursera.org/learn/neurohacking
 
-Download the sample data from here:
+The original source of the sample dataset:
 https://github.com/muschellij2/Neurohacking_data
