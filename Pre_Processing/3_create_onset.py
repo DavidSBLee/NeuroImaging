@@ -18,6 +18,7 @@ niftiPath = '/study3/midus3/processed_data/MIDUS3_Imaging'
 temporaryBigPath = "/study/midus3/processed_data/Temporary/Big/" 
 temporarySmallPath = "/study/midus3/processed_data/Temporary/Small/"
 txt_files = glob.glob("%s/midus3_order[1-2]_eyetracking_v[0-9][0-9]-[0-9][0-9][0-9]-[0-9][0-9][0-9]*.txt"%(onsetPath))
+
 if __name__ == "__main__":
     for file in txt_files:
         name = file.split('_')[4] 
