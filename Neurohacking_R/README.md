@@ -1,3 +1,5 @@
+# Neurohacking_R 
+
 The scripts are adapted from the "Neurohacking in R" Coursera course:
 https://www.coursera.org/learn/neurohacking
 
