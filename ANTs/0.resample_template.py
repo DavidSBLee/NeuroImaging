@@ -1,5 +1,7 @@
  #!/usr/bin/env python3
 
+import os
  # Resample a template image with 1x1x1 voxel dimension
- # or 1x1x1
- ResampleImage 3 template_brain.nii.gz template_newsize.nii.gz 1.1.1.
+ # Change the voxel dimension of your choice
+ # The change in the voxel dimension will change the number of total dimensions
+os.system("ResampleImage 3 /path/to/template /path/to/resampled/template 1x1x1")
