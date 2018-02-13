@@ -26,9 +26,20 @@ os.system("antsApplyTransforms -d 3 -i "/path/to/T1w/nifti"
           -o ["/path/to/output/nifti, 1] 
           -t "/path/to/nonlinear_forward_map/nifti"
           -t "/path/to/linear_transform.mat")
-
-# Bash Example code
+              
+### Python Example 
+#def concetanation(subNum):
+              #os.system("antsApplyTransforms -d 3 -i 
+#             /study4/midusref/DATA/mri/processed/david/Post_Anonymization/%s/%s_T1w.nii.gz 
+#             -r /study4/midusref/DATA/mri/processed/david/scripts/Mayo_T1w_resampled_template.nii.gz 
+#             -o [/study4/midusref/DATA/mri/processed/david/Post_Anonymization/%s/%s_concatenated.nii.gz, 1] 
+#             -t /study4/midusref/DATA/mri/processed/david/Post_Anonymization/%s/%s_structural_to_resampled_template_1Warp.nii.gz -t /study4/midusref/DATA/mri/processed/david/Post_Anonymization/%s/%s_structural_to_resampled_template_0GenericAffine.mat"%(subNum,subNum,subNum,subNum,subNum,subNum,subNum,subNum))
+#concetanation(subNum)
+              
+### Bash Example 
           # {nm} == naming prefix, it can be subject number or filename of your choice
           # {AP} == Path to ANTs binaries, wherever you installed ANTs
           
-# ${AP}antsApplyTransforms -d $dim -i $m -r $f -n linear -t ${nm}1Warp.nii.gz -t ${nm}0GenericAffine.mat -o ${nm}_warped.nii.gz --float1
+# ${AP}antsApplyTransforms -d $dim -i $m -r $f -n linear 
+#              -t ${nm}1Warp.nii.gz -t ${nm}0GenericAffine.mat 
+#              -o ${nm}_warped.nii.gz --float1
