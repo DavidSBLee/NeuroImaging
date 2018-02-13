@@ -2,7 +2,7 @@
 
 # Author: David SB Lee
 # First Compiled: 12/13/2017
-# Purpose: Apply the calculated Linear & Non-Linear transforms 
+# Purpose: Concatenate the calculated Linear & Non-Linear transforms 
 
 # Things to change when running on different data set
 # 1. All Paths
@@ -15,17 +15,17 @@ import os
 print(sys.argv)
 subNum = sys.argv[1]
 
-path = "/study4/midusref/DATA/mri/processed/david/%s"%(subNum)
+path = "/path/to/subdir"
 
-# Apply transformation
+# Concatenate transformation
 # GenericAffine.mat == composite linear transform
 # 1Warp.nii.gz == nonlinear forward warp
 
-os.system("antsApplyTransforms -d 3 -i "%s/%s_T1w_fslanat_brain_nii.gz"%(path, subNum) 
+os.system("antsApplyTransforms -d 3 -i "/path/to/T1w/nifti" 
           -r "/path/to/template/nifti"
-          -o ["/study4/midusref/DATA/mri/processed/david/%s/%s_concetenated.nii.gz"%(subNum, subNum), 1] 
-          -t "/study4/midusref/DATA/mri/processed/david/%s/%s_structural_to_resampled_template_1Warp.nii.gz"%(subNum, subNum) 
-          -t "/study4/midusref/DATA/mri/processed/david/%s/%s_structural_to_resampled_template_0GenericAffine.mat"%(subNum, subNum)")
+          -o ["/path/to/output/nifti, 1] 
+          -t "/path/to/nonlinear_forward_map/nifti"
+          -t "/path/to/linear_transform.mat")
 
 # Bash Example code
           # {nm} == naming prefix, it can be subject number or filename of your choice
