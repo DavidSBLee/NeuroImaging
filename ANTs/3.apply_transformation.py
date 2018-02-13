@@ -22,3 +22,12 @@ subprocess.call(["antsApplyTransform", "-d", "3", "-i", "/path/to/T1w/nifti,
                  "-r", "/path/to/template/nifti", 
                  "-t", "/path/to/concatenated.nii.gz", # output of step 2 concatenation
                  "-o", "/path/to/final.nii.gz"]) # final output
+
+### Example
+#def normalization(subNum):
+#os.system("antsApplyTransforms -d 3 -i 
+# /study4/midusref/DATA/mri/processed/david/Post_Anonymization/%s/%s_T1w.nii.gz 
+# -r /study4/midusref/DATA/mri/processed/david/scripts/Mayo_T1w_resampled_template.nii.gz 
+# -t /study4/midusref/DATA/mri/processed/david/Post_Anonymization/%s/%s_concatenated.nii.gz 
+# -o /study4/midusref/DATA/mri/processed/david/Post_Anonymization/%s/%s_normalized_to_resampled_template.nii.gz"%(subNum,subNum,subNum,subNum,subNum,subNum))
+#normalization(subNum)
