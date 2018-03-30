@@ -3,7 +3,7 @@ import numpy as np
 import math
 import glob
 
-# SSD Calculation
+# SSD Calculation (Sum of Sqaured Difference)
 #SSD = sqrt( (dx(t)-dx(t-1))^2 + (dy(t)-dy(t-1))^2 + (dz(t)-dz(t-1))^2 + (da(t)-da(t-1))^2 + (db(t)-db(t-1))^2 + (dc(t)-dc(t-1))^2 )
 
 # Function for calculating difference t1-t  (lag 1 difference)
