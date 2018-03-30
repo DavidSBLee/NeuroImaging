@@ -12,7 +12,7 @@ y_test = keras.utils.to_categorical(np.random.randint(2, size=(100, 1)), num_cla
 
 # CSV to Python Numpy Array
 import numpy as np
-my_data = np.genfromtxt('/Users/SB/Desktop/tree_sample_midusref.csv', delimiter=',', dtype=float, skip_header=1)
+my_data = np.genfromtxt('/Users/SB/Desktop/behavioral_data.csv', delimiter=',', dtype=float, skip_header=1)
 X = (my_data[:,13:16])
 y = (my_data[:,0])
 
