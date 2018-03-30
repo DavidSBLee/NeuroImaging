@@ -89,7 +89,7 @@ for num, patient in enumerate(patients):
         print('This is unlabeled data')
 np.save('/Users/SB/Desktop/muchdata_{}_{}_{}.npy'.format(IMG_PX_SIZE, IMG_PX_SIZE, HM_SLICES), much_data)
 
-
+### Build Convolutional Neural Network
 import tensorflow as tf
 import numpy as np
 
