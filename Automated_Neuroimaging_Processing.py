@@ -351,7 +351,9 @@ if __name__ == "__main__":
                 #shutil.copy2("/%s/dwi/Orientation_To_Fix/sub-"%(sub) + subNum + "_dwi.bval", "/%s/dwi/"%(sub))
                 #shutil.copy2("/%s/dwi/Orientation_To_Fix/sub-"%(sub) + subNum + "_dwi.bvec", "/%s/dwi/"%(sub))
                 shutil.rmtree("%s/dwi/Orientation_To_Fix/"%(sub))   
-     
+        
+        # Grant Group & User permission for the files created
+        os.system("chmod +775 -rf {}".format(processedData))
 
     ### 3. Convert eprime .txt files from to .tsv files ###
     versionNumber = 1
