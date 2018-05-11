@@ -6,6 +6,8 @@ import glob
 # SSD Calculation (Sum of Sqaured Difference)
 #SSD = sqrt( (dx(t)-dx(t-1))^2 + (dy(t)-dy(t-1))^2 + (dz(t)-dz(t-1))^2 + (da(t)-da(t-1))^2 + (db(t)-db(t-1))^2 + (dc(t)-dc(t-1))^2 )
 
+# Purpose: The Script Outputs SSD values for single subject
+
 # Function for calculating difference t1-t  (lag 1 difference)
 def calculate_diff(t, tMINUS1, newColumnHeader):
 	# Extract the column of interest
