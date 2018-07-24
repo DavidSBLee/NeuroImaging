@@ -15,10 +15,10 @@ head(data)
 # Select rows(Subjects) that have filter quality = 1 (change column name to exclude $)
 newData <- subset(data, M3_CORR_ANALYSIS_FILTER == 1 & filter == 1)
 # or newData <- data[ which( filter == 1 & M3_CORR_ANALYSIS_FILTER == 1) , ]
-
+colnames(newData)
 #---------- Make long format for 12 epochs
-M2corr <- paste("dlog.neu", 1:12, sep="")
-M3corr <- paste("dlog_cor.neu", 1:12, sep="")
+M2corr <- paste("dlog.neg", 1:12, sep="")
+M3corr <- paste("dlog_cor.neg", 1:12, sep="")
 myvars <- c("RESPID", M2corr, M3corr)
 new <- newData[myvars]
 gathervars <- c(M2corr, M3corr)
@@ -28,7 +28,7 @@ data.long = gather(new, corr, value, gathervars)
 data.long$timepoint <- NA
 data.long$epoch <- NA
 #grepl("cor", dat.log$corr)
-data.long <- mutate(data.long, timepoint = ifelse(grepl("dlog.neu", data.long$corr), "1","2"))
+data.long <- mutate(data.long, timepoint = ifelse(grepl("dlog.neg", data.long$corr), "1","2"))
 
 # sort dataframe by column
 #data.sorted <- data.long[order(data.long$RESPID), ]
@@ -60,11 +60,11 @@ colnames(newData)
 
 # In a single line
 # M2 data
-M2_data <- grep(glob2rx("M2_dcor.neg.*"), colHead)
+M2_data <- grep(glob2rx("M2_dcor.neg_pos.*"), colHead)
 # Subset the character vector
 M2_data <- M2_data[c(1, 2, 3)]
 # M3 data
-M3_data <- grep(glob2rx("M3_dcor.neg.*"), colHead)
+M3_data <- grep(glob2rx("M3_dcor.neg_pos.*"), colHead)
 # Subset the character vector
 M3_data <- M3_data[c(1, 2, 3)]
 
@@ -88,7 +88,7 @@ data.long = gather(new, corr, value, c(-1))
 data.long$timepoint <- NA
 data.long$epoch <- NA
 #grepl("cor", dat.log$corr)
-data.long <- mutate(data.long, timepoint = ifelse(grepl("M2", data.long$corr), "1","2"))
+data.long <- mutate(data.long, timepoint = ifelse(grepl("dlog", data.long$corr), "1","2"))
 
 data.long <- mutate(data.long, epoch = ifelse(grepl("early", data.long$corr), "1", 
                                          ifelse(grepl("mid", data.long$corr), "2",

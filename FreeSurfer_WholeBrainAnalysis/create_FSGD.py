@@ -3,7 +3,7 @@ import numpy as np
 
 # DEMEAN AGE
 # DEMEAN COVARIATES
-
+# Make sure first column header is "fsid"
 
 infile = "/Volumes/study4/midusref/DATA/mri/processed/freesurfer/david/freesurfer_with_pwb.csv"
 outfile = "/Users/SB/Desktop/gender_age_pwb_david.fsgd"

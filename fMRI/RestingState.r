@@ -1,3 +1,4 @@
+
 data <- read.csv("/home/slee/Desktop/ref_anon.csv", header=TRUE)
 goodData <- read.csv("/home/slee/Desktop/MIDUSREF_Good_Resting_subID_5minutes.txt", header=FALSE)
 
