@@ -1,8 +1,15 @@
 #!/bin/python3
 
-# Autor: D.Lee
+# TO DO: 1. Debug loop problem for T1w
+#        2. Change Variable Names 
+#        3. Make conversion more efficient
+#        4. Put functions in parent __init__script
+#        5. Write code that can take multiple E-prime files into account
+#        6. Better names for "temporary" e-prime files
+
+# Author: David Lee
 # First Compiled: 10/15/2017
-# Last Updated: 12/08/2017
+# Last Updated: 08/14/2018
 # Updated Content: (10/15/2017) Organization
 # Updated Content: (10/30/2017) Compilation of individual scripts
 # Updated Conetnt: (11/02/2017) Added "groups" column tu pull Parametric modulation as "1"
@@ -15,6 +22,8 @@
 # Updated Content: (05/10/2018) Updated fMRI file structure to fit BIDS specification
 # Updated Content: (06/08/2018) Added "umask 002" to grant output file permissions
 # Updated Content: (06/20/2018) Deleted "umask 002" becasue this does not work on condor environment
+# Updated Content: (07/28/2018) Account for subject 065 with inconsistent filename (line 395) : grab all eprime.txt files
+# Updated Content: (08/14/2018) Cause Unknown: Script skips T1w conversion: changed the order of loops to work around
 
 # Purpose: 1. Convert DICOMs to NIfTIs
 #          2. Fix Orientations for fMRI and Resting state
@@ -45,7 +54,7 @@ temporaryBigPath = "/study/midus3/processed_data/Temporary/Big/"
 temporarySmallPath = "/study/midus3/processed_data/Temporary/Small/"
 
 # Set Functions in order of Usage
-def structural_conversion(dicoms, niftiPath, suNum, scanName):
+def structural_conversion(dicoms, niftiPath, subNum, scanName):
     os.system("convert_dcm2niix %s %s/sub-%s/anat/sub-%s_%s.nii.gz"%(dicoms, niftiPath, subNum, subNum, scanName))
 
 def functional_conversion(dicoms, niftiPath, subNum, versionNum):
@@ -57,7 +66,7 @@ def resting_conversion(dicoms, niftiPath, subNum, scanName):
 def dti_conversion(dicoms, niftiPath, subNum, scanName):
     os.system("convert_dcm2niix %s %s/sub-%s/dwi/Orientation_To_Fix/sub-%s_%s.nii.gz"%(dicoms, niftiPath, subNum, subNum, scanName))
 
-def fieldmap_coversion(dicoms, niftiPath, subNum, fieldMapName):
+def fieldmap_conversion(dicoms, niftiPath, subNum, fieldMapName):
     os.system("convert_dcm2niix %s %s/sub-%s/fmap/sub-%s_%s.nii.gz"%(dicoms, niftiPath, subNum, subNum, fieldMapName))
 
 def asl_converstion(dicoms, niftiPath, subNum, scanName):
@@ -249,7 +258,6 @@ if __name__ == "__main__":
     print (niftis)
 
     # Checking and Processing
-
     for dicom in dicoms:
         name = str(dicom) # string casting
         number = ["0" for _ in range(3-len(name))] + [name] # var = ["0"]*(3-len(name)) (do this b/c just printing name will give me numbers without 0)
@@ -269,23 +277,16 @@ if __name__ == "__main__":
             for dicoms in unzippedDicoms:
                 fullScanName = dicoms.split('/')[6]
                 scanName = fullScanName[6:] # Extract scanname
-                #print (scanName)
-                #if "LOCALIZER" not in scanName: # Skip Localizers
-                if "T1w" == scanName: # Had to do this becuase there is additional raw-data folder named T1w since 027
-                    os.makedirs(niftiSet)
-                    os.makedirs(niftiSet + "/anat")
-                    #os.system("convert_dcm2niix %s %s/sub-%s/anat/sub-%s_%s.nii.gz"%(dicoms, niftiPath, subNum, subNum, scanName))
-                    structural_conversion(dicoms, niftiPath, subNum, scanName)
-                    print_conversion_completion(scanName)
 
                 if "00005.task-ER_run-1_bold" in fullScanName:
                     #scanName = scanName.replace('1', '01')
+                    os.makedirs(niftiSet)
                     os.makedirs(niftiSet + "/func")
                     os.makedirs(niftiSet + "/func/Orientation_To_Fix")
                     #os.system("convert_dcm2niix %s %s/sub-%s/func/Orientation_To_Fix/sub-%s_task-emotionRegulation_run-01.nii.gz"%(dicoms, niftiPath, subNum, subNum))
                     functional_conversion(dicoms, niftiPath, subNum, "01")
                     print_conversion_completion(scanName)
-
+            
                 if "00006.task-ER_run-2_bold" in fullScanName:
                     #if "task-ER_run-2_bold" in fullScanName:
                         #scanName = scanName.replace('2', '02')
@@ -312,7 +313,7 @@ if __name__ == "__main__":
                     elif "task-ER_run-2_bold" in scanName:
                         functional_conversion(dicoms, niftiPath, subNum, "03")
                         print_conversion_completion("task-ER-run-3_bold")
-				"""
+                """
                 if "task-rest_bold" in scanName:
                     #os.system("convert_dcm2niix %s %s/sub-%s/func/Orientation_To_Fix/sub-%s_%s.nii.gz"%(dicoms, niftiPath, subNum, subNum, scanName))
                     resting_conversion(dicoms, niftiPath, subNum, scanName)
@@ -331,14 +332,14 @@ if __name__ == "__main__":
                     if os.path.isdir("%s/fmap/"%(niftiSet)) == False:
                         os.makedirs("%s/fmap"%(niftiSet))
                     #os.system("convert_dcm2niix %s %s/sub-%s/fmap/sub-%s_magnitude.nii.gz"%(dicoms, niftiPath, subNum, subNum))
-                    fieldmap_coversion(dicoms, niftiPath, subNum, "magnitude")
+                    fieldmap_conversion(dicoms, niftiPath, subNum, "magnitude")
                     print_conversion_completion(scanName)
 
                 if "FieldMap__fmap" in scanName:
                     if os.path.isdir("%s/fmap/"%(niftiSet)) == False:
                         os.makedirs("%s/fmap"%(niftiSet))
                     #os.system("convert_dcm2niix %s %s/sub-%s/fmap/sub-%s_fieldmap.nii.gz"%(dicoms, niftiPath, subNum, subNum))
-                    fieldmap_coversion(dicoms, niftiPath, subNum, "fieldmap")
+                    fieldmap_conversion(dicoms, niftiPath, subNum, "fieldmap")
                     print_conversion_completion(scanName)
 
                 if "asl" in scanName:
@@ -348,8 +349,16 @@ if __name__ == "__main__":
                     asl_converstion(dicoms, niftiPath, subNum, scanName)
                     print_conversion_completion(scanName)
 
-            print ("----------" + subNum + " Coversion Complete----------")
+                if "ORIG_T1w" == scanName: # Had to do this becuase there is additional raw-data folder named T1w since 027
+                    #print (str(counter))
+                    #os.makedirs(niftiSet)
+                    os.makedirs(niftiSet + "/anat")
+                    #os.system("convert_dcm2niix %s %s/sub-%s/anat/sub-%s_%s.nii.gz"%(dicoms, niftiPath, subNum, subNum, scanName))
+                    structural_conversion(dicoms, niftiPath, subNum, "T1w")
+                    print_conversion_completion("T1w")
 
+            print ("----------" + subNum + " Conversion Complete----------")
+             
     ### 2. Fix Orientations and Delete the old ones ###
 
     subPath = glob.glob(processedData)
@@ -388,7 +397,9 @@ if __name__ == "__main__":
     ### 3. Convert eprime .txt files from to .tsv files ###
     versionNumber = 1
 
-    txt_files = sorted(glob.glob("%s/midus3_order[0-9]_eyetracking_v[0-9][0-9]-[0-9][0-9][0-9]-[0-9][0-9][0-9]*.txt"%(onsetPath)))
+    #txt_files = sorted(glob.glob("%s/midus3_order[0-9]_eyetracking_v[0-9][0-9]-[0-9][0-9][0-9]-[0-9][0-9][0-9]*.txt"%(onsetPath)))
+    #Note: The last two digits were removed from 'txt_files' variable to accommodate processing 064's raw .txt files. MK 7/26/18
+    txt_files = sorted(glob.glob("%s/midus3_order[0-9]_eyetracking_v[0-9][0-9]-[0-9][0-9][0-9]-[0-9]*.txt"%(onsetPath)))
 
     # Check that .tsv files have not already been created. If no .tsv file, script will create .tsv file in 'func' directory (using the .txt file from raw-data). If .tsv file already exists, no action will be taken. As a check for user, script will print names of those subjects for which directories are being created.
     for file in txt_files:
