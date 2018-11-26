@@ -17,8 +17,8 @@ class ScanEprimeDivider:
 
 	def __init__(self, subject_number, task_number, scan_eprime_dir="/study/midus3/processed_data/", 
 		scan_eprime_by_run_output_dir="/study/midus3/processed_data/", study_name="MIDUS3"):
-		self.scan_eprime_dir = scan_eprime_raw_dir
-		self.scan_eprime_by_run_output_dir = scan_eprime_output_dir
+		self.scan_eprime_dir = scan_eprime_dir
+		self.scan_eprime_by_run_output_dir = scan_eprime_by_run_output_dir
 		self.study_name = study_name
 		self.subject_number = subject_number
 		self.task_number = task_number
@@ -26,137 +26,98 @@ class ScanEprimeDivider:
 	def set_column_headers(self):
 		column_header_list = ['onset',
 		'duration',
-        'database',
-        'Response_Time_Face',
-        'stimulus',
-        'correct',
-        'valence',
-        'valenceFollowing',
-        'gender',
-        'response',
-        'face_correct_response',
-        'sociality',
-        'groups',
-        'onset_trimmed',
-        'Blocks']
+		'database',
+		'Response_Time_Face',
+		'stimulus',
+		'correct',
+		'valence',
+		'valenceFollowing',
+		'gender',
+		'response',
+		'face_correct_response',
+		'sociality',
+		'groups',
+		'onset_trimmed',
+		'Blocks']
 
-    	return column_header_list
+		return column_header_list
 
-    	#Define column header names
-    def create_csv_writer(self):
-    	column_header_list = self.set_column_headers()
-    	row_writer = csv.DictWriter(newTsv, fieldnames=column_header_list, delimiter='\t', lineterminator='\n') 
-    	return row_writer
+		#Define column header names
+	def create_csv_writer(self, outfile):
+		column_header_list = self.set_column_headers()
+		row_writer = csv.DictWriter(outfile, fieldnames=column_header_list, delimiter='\t', lineterminator='\n') 
+		return row_writer
 
-    def create_csv_reader(self):
-    	row_reader= csv.DictReader(tsvFile, delimiter='\t') # Dict Reader uses the header column names
-    	return row_reader
+	def create_csv_reader(self, infile):
+		row_reader= csv.DictReader(infile, delimiter='\t') # Dict Reader uses the header column names
+		return row_reader
 
-    def write_header(self):
-    	row_writer = create_csv_writer()
-    	row_writer.writeheader()
+	def write_header(self, outfile):
+		row_writer = self.create_csv_writer(outfile)
+		row_writer.writeheader()
 
-    def compute_and_write_values(self):
-    	row_reader = create_csv_reader()
-    	row_writer = create_csv_writer()
+	def compute_and_write_values(self, infile, outfile):
+		row_reader = self.create_csv_reader(infile)
+		row_writer = self.create_csv_writer(outfile)
 
-    	# Compute the values (onset, duration, response time etc.)
-        for rows in row_reader:
-            block_number = rows['Blocks']
-            # Cast float to maintain the decimal points
-            IAPS_onset_time = float(rows['IAPSPicture.OnsetTime'])/float(1000)
-            IAPS_offset_time = float(rows['IAPSPicture.OffsetTime'])/float(1000)
-            IAPS_TTL = float(rows['WaitForTTL.RTTime'])/float(1000)
-            IAPS_onset_TTL_adjusted = IAPS_onset_time - IAPS_TTL
-            IAPS_duration = float(IAPS_offset_time - IAPS_onset_time)
-            IAPS_onset_time_trimmed = IAPS_onset_TTL_adjusted - 8#(float(rows['IAPSPicture.OnsetTime'])-8000)/float(1000)
-            IAPS_number = rows['PictureFile'][:4]
-            IAPS_valence = rows['valencecategory']
-            IAPS_socilaity = rows['Sociality']
-            ones = rows['Group']
+		# Compute the values (onset, duration, response time etc.)
+		for rows in row_reader:
+			block_number = rows['Blocks']
+			# Cast float to maintain the decimal points
+			IAPS_onset_time = float(rows['IAPSPicture.OnsetTime'])/float(1000)
+			IAPS_offset_time = float(rows['IAPSPicture.OffsetTime'])/float(1000)
+			IAPS_TTL = float(rows['WaitForTTL.RTTime'])/float(1000)
+			IAPS_onset_TTL_adjusted = IAPS_onset_time - IAPS_TTL
+			IAPS_duration = float(IAPS_offset_time - IAPS_onset_time)
+			IAPS_onset_time_trimmed = IAPS_onset_TTL_adjusted - 8#(float(rows['IAPSPicture.OnsetTime'])-8000)/float(1000)
+			IAPS_number = rows['PictureFile'][:4]
+			IAPS_valence = rows['valencecategory']
+			IAPS_socilaity = rows['Sociality']
+			ones = rows['Group']
 
-            task_number = str(task_number)
-            if task_number in block_number:
+			self.task_number = str(self.task_number)
+			if self.task_number in block_number:
 
-                row_writer.writerow({'onset': IAPS_onset_TTL_adjusted,
-                'duration':IAPS_duration,
-                'Response_Time_Face': "n/a",
-                'database': "IAPS",
-                'stimulus': IAPS_number,
-                'correct': "n/a",
-                'valence': IAPS_valence,
-                'valenceFollowing': "n/a",
-                'gender': "n/a",
-                'response': "n/a",
-                'face_correct_response': "n/a",
-                'sociality': IAPS_socilaity,
-                'groups': ones,
-                'onset_trimmed': IAPS_onset_time_trimmed,
-                'Blocks':rows['Blocks']})
+				row_writer.writerow({'onset': IAPS_onset_TTL_adjusted,
+				'duration':IAPS_duration,
+				'Response_Time_Face': "n/a",
+				'database': "IAPS",
+				'stimulus': IAPS_number,
+				'correct': "n/a",
+				'valence': IAPS_valence,
+				'valenceFollowing': "n/a",
+				'gender': "n/a",
+				'response': "n/a",
+				'face_correct_response': "n/a",
+				'sociality': IAPS_socilaity,
+				'groups': ones,
+				'onset_trimmed': IAPS_onset_time_trimmed,
+				'Blocks':rows['Blocks']})
 
-    def process(self):
-    	with open(tsv, 'rU') as tsvFile, open(temporarySmallPath + 'sub-' + subNum + '_IAPS-01.tsv', 'w', newline="") as newTsv:
-                calc_write_values_IAPS(newTsv, tsvFile, 1) 
-
-
-    def calc_write_values_IAPS(newTsv,tsvFile, taskNum):
-        row_writer = csv.DictWriter(newTsv, fieldnames=column_header_list, delimiter='\t', lineterminator='\n') # \t skips column!
-        row_reader= csv.DictReader(tsvFile, delimiter='\t') # Dict Reader uses the header column names
-
-        # Write column headers manually
-        row_writer.writeheader()
-
-        # Compute the values (onset, duration, response time etc.)
-        for rows in row_reader:
-            blockNum = rows['Blocks']
-            # Cast float to maintain the decimal points
-            IAPSOnsetTime = float(rows['IAPSPicture.OnsetTime'])/float(1000)
-            IAPSOffsetTime = float(rows['IAPSPicture.OffsetTime'])/float(1000)
-            IAPS_TTL = float(rows['WaitForTTL.RTTime'])/float(1000)
-            IAPSOnsetTTLAdjusted = IAPSOnsetTime - IAPSTTL
-            IAPSDuration = float(IAPSOffsetTime - IAPSOnsetTime)
-            IAPSOnsetTimeTrimmed = IAPSOnsetTTLAdjusted - 8#(float(rows['IAPSPicture.OnsetTime'])-8000)/float(1000)
-            IAPSNumber = rows['PictureFile'][:4]
-            IAPSValence = rows['valencecategory']
-            IAPSSocilaity = rows['Sociality']
-            ones = rows['Group']
-
-            taskNum = str(taskNum)
-            if taskNum in blockNum:
-
-                row_writer.writerow({'onset': IAPSOnsetTTLAdjusted,
-                'duration':IAPSDuration,
-                'Response_Time_Face': "n/a",
-                'database': "IAPS",
-                'stimulus': IAPSNumber,
-                'correct': "n/a",
-                'valence': IAPSValence,
-                'valenceFollowing': "n/a",
-                'gender': "n/a",
-                'response': "n/a",
-                'face_correct_response': "n/a",
-                'sociality': IAPSSocilaity,
-                'groups': ones,
-                'onset_trimmed': IAPSOnsetTimeTrimmed,
-                'Blocks':rows['Blocks']})
+	def process(self):
+		with open(f'{self.scan_eprime_dir}sub-{self.subject_number}_task-ER_events.tsv' , 'rU') as infile, open(f'{self.scan_eprime_by_run_output_dir}sub-{self.subject_number}_IAPS-01.tsv', 'w', newline="") as outfile:
+			self.create_csv_reader(infile)
+			self.create_csv_writer(outfile)
+			self.write_header(outfile)
+			self.compute_and_write_values(infile, outfile)
 
 
-    def block_one_data_manipulation(temporarySmallPath, subNum, niftiPath):
-        # Read in csv
-        df1 = pd.read_csv(temporarySmallPath + 'sub-' + subNum + '_IAPS-01.tsv', sep='\t')
-        df2 = pd.read_csv(temporarySmallPath + 'sub-' + subNum + '_faces-01.tsv', sep='\t')
-        # join the two data frames along rows
-        df3 = pd.concat([df1, df2])
-        # Sort everything by onset column
-        df3 = df3.sort_values('onset')
-        # Remove unnecessary blocks column
-        del df3['Blocks']
-        # Use loc and isnull to replace no responses to "n/a"
-        df3.loc[(df3['Response_Time_Face'] == 0), 'Response_Time_Face'] = "n/a"
-        df3.loc[(df3['response'].isnull()), 'response'] = "n/a"
-        # Write the datafram into tsv format
-        df3.to_csv(niftiPath + '/sub-' + subNum + '/func/sub-' + subNum + '_task-EmotionRegulation_run-01_events.tsv', sep='\t', index=None) # index = None --> removes first column of the index which are created by to_csv Pandas dataframe
-        print ('----------Onset file(s) for ' + subNum + '-01 created----------')
+	def block_one_data_manipulation(temporarySmallPath, subNum, niftiPath):
+		# Read in csv
+		df1 = pd.read_csv(temporarySmallPath + 'sub-' + subNum + '_IAPS-01.tsv', sep='\t')
+		df2 = pd.read_csv(temporarySmallPath + 'sub-' + subNum + '_faces-01.tsv', sep='\t')
+		# join the two data frames along rows
+		df3 = pd.concat([df1, df2])
+		# Sort everything by onset column
+		df3 = df3.sort_values('onset')
+		# Remove unnecessary blocks column
+		del df3['Blocks']
+		# Use loc and isnull to replace no responses to "n/a"
+		df3.loc[(df3['Response_Time_Face'] == 0), 'Response_Time_Face'] = "n/a"
+		df3.loc[(df3['response'].isnull()), 'response'] = "n/a"
+		# Write the datafram into tsv format
+		df3.to_csv(niftiPath + '/sub-' + subNum + '/func/sub-' + subNum + '_task-EmotionRegulation_run-01_events.tsv', sep='\t', index=None) # index = None --> removes first column of the index which are created by to_csv Pandas dataframe
+		print ('----------Onset file(s) for ' + subNum + '-01 created----------')
 
 
 class ScanEprimeConverter:
@@ -184,13 +145,13 @@ class ScanEprimeConverter:
 
 
 	def identify_target_raw_eprime(self):
-		infile = glob.glob(f'{scan_eprime_raw_dir} midus3_order[1-2]_eyetracking_v{self.subject_number}-{self.subject_number}.txt')
+		infile = f'{self.scan_eprime_raw_dir}midus3_order[1-2]_eyetracking_v[0][0-2]-{self.subject_number}-{self.subject_number}.txt'
 		return infile
 
 	def set_outfile_name(self):
-		outfile = f'{self.scan_eprime_output_dir} sub-{self.subject_number}_task-ER_events.tsv'
+		outfile = f'{self.scan_eprime_output_dir}sub-{self.subject_number}_task-ER_events.tsv'
 
-		return oufile
+		return outfile
 
 	def process(self):
 		infile = self.identify_target_raw_eprime()
@@ -352,7 +313,9 @@ class NiftiConverter:
 # nifti_converter.process()
 # rotator = NiftiRotator("001")
 # rotator.process()
-eprime_converter = ScanEprimeConverter(001)
-eprime_converter.process()
+# eprime_converter = ScanEprimeConverter("001")
+# eprime_converter.process()
+eprime_divider = ScanEprimeDivider("001", "1")
+eprime_divider.process()
 
 
