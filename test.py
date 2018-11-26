@@ -7,12 +7,21 @@ import pandas as pd
 
 class ScanEprimeDivider:
 
-	def __init__(self, subject_number, scan_eprime_dir="/study/midus3/processed_data/Temporary/Big/", 
-		scan_eprime_by_run_output_dir="/study/midus3/processed_data/Temporary/Small/", study_name="MIDUS3"):
+	# def __init__(self, subject_number, task_number, scan_eprime_dir="/study/midus3/processed_data/Temporary/Big/", 
+	# 	scan_eprime_by_run_output_dir="/study/midus3/processed_data/Temporary/Small/", study_name="MIDUS3"):
+	# 	self.scan_eprime_dir = scan_eprime_raw_dir
+	# 	self.scan_eprime_by_run_output_dir = scan_eprime_output_dir
+	# 	self.study_name = study_name
+	# 	self.subject_number = subject_number
+	# 	self.task_number = task_number
+
+	def __init__(self, subject_number, task_number, scan_eprime_dir="/study/midus3/processed_data/", 
+		scan_eprime_by_run_output_dir="/study/midus3/processed_data/", study_name="MIDUS3"):
 		self.scan_eprime_dir = scan_eprime_raw_dir
 		self.scan_eprime_by_run_output_dir = scan_eprime_output_dir
 		self.study_name = study_name
 		self.subject_number = subject_number
+		self.task_number = task_number
 
 	def set_column_headers(self):
 		column_header_list = ['onset',
@@ -32,7 +41,6 @@ class ScanEprimeDivider:
         'Blocks']
 
     	return column_header_list
-
 
     	#Define column header names
     def create_csv_writer(self):
@@ -54,40 +62,41 @@ class ScanEprimeDivider:
 
     	# Compute the values (onset, duration, response time etc.)
         for rows in row_reader:
-            blockNum = rows['Blocks']
+            block_number = rows['Blocks']
             # Cast float to maintain the decimal points
-            IAPSOnsetTime = float(rows['IAPSPicture.OnsetTime'])/float(1000)
-            IAPSOffsetTime = float(rows['IAPSPicture.OffsetTime'])/float(1000)
-            IAPSTTL = float(rows['WaitForTTL.RTTime'])/float(1000)
-            IAPSOnsetTTLAdjusted = IAPSOnsetTime - IAPSTTL
-            IAPSDuration = float(IAPSOffsetTime - IAPSOnsetTime)
-            IAPSOnsetTimeTrimmed = IAPSOnsetTTLAdjusted - 8#(float(rows['IAPSPicture.OnsetTime'])-8000)/float(1000)
-            IAPSNumber = rows['PictureFile'][:4]
-            IAPSValence = rows['valencecategory']
-            IAPSSocilaity = rows['Sociality']
+            IAPS_onset_time = float(rows['IAPSPicture.OnsetTime'])/float(1000)
+            IAPS_offset_time = float(rows['IAPSPicture.OffsetTime'])/float(1000)
+            IAPS_TTL = float(rows['WaitForTTL.RTTime'])/float(1000)
+            IAPS_onset_TTL_adjusted = IAPS_onset_time - IAPS_TTL
+            IAPS_duration = float(IAPS_offset_time - IAPS_onset_time)
+            IAPS_onset_time_trimmed = IAPS_onset_TTL_adjusted - 8#(float(rows['IAPSPicture.OnsetTime'])-8000)/float(1000)
+            IAPS_number = rows['PictureFile'][:4]
+            IAPS_valence = rows['valencecategory']
+            IAPS_socilaity = rows['Sociality']
             ones = rows['Group']
 
-            taskNum = str(taskNum)
-            if taskNum in blockNum:
+            task_number = str(task_number)
+            if task_number in block_number:
 
-                row_writer.writerow({'onset': IAPSOnsetTTLAdjusted,
-                'duration':IAPSDuration,
+                row_writer.writerow({'onset': IAPS_onset_TTL_adjusted,
+                'duration':IAPS_duration,
                 'Response_Time_Face': "n/a",
                 'database': "IAPS",
-                'stimulus': IAPSNumber,
+                'stimulus': IAPS_number,
                 'correct': "n/a",
-                'valence': IAPSValence,
+                'valence': IAPS_valence,
                 'valenceFollowing': "n/a",
                 'gender': "n/a",
                 'response': "n/a",
                 'face_correct_response': "n/a",
-                'sociality': IAPSSocilaity,
+                'sociality': IAPS_socilaity,
                 'groups': ones,
-                'onset_trimmed': IAPSOnsetTimeTrimmed,
+                'onset_trimmed': IAPS_onset_time_trimmed,
                 'Blocks':rows['Blocks']})
 
-
-
+    def process(self):
+    	with open(tsv, 'rU') as tsvFile, open(temporarySmallPath + 'sub-' + subNum + '_IAPS-01.tsv', 'w', newline="") as newTsv:
+                calc_write_values_IAPS(newTsv, tsvFile, 1) 
 
 
     def calc_write_values_IAPS(newTsv,tsvFile, taskNum):
@@ -103,7 +112,7 @@ class ScanEprimeDivider:
             # Cast float to maintain the decimal points
             IAPSOnsetTime = float(rows['IAPSPicture.OnsetTime'])/float(1000)
             IAPSOffsetTime = float(rows['IAPSPicture.OffsetTime'])/float(1000)
-            IAPSTTL = float(rows['WaitForTTL.RTTime'])/float(1000)
+            IAPS_TTL = float(rows['WaitForTTL.RTTime'])/float(1000)
             IAPSOnsetTTLAdjusted = IAPSOnsetTime - IAPSTTL
             IAPSDuration = float(IAPSOffsetTime - IAPSOnsetTime)
             IAPSOnsetTimeTrimmed = IAPSOnsetTTLAdjusted - 8#(float(rows['IAPSPicture.OnsetTime'])-8000)/float(1000)
@@ -131,61 +140,6 @@ class ScanEprimeDivider:
                 'onset_trimmed': IAPSOnsetTimeTrimmed,
                 'Blocks':rows['Blocks']})
 
-    def calc_write_values_faces(newTsv,tsvFile, taskNum):
-        row_writer = csv.DictWriter(newTsv, fieldnames=column_header_list, delimiter='\t', lineterminator='\n') # \t skips column!
-        row_reader= csv.DictReader(tsvFile, delimiter='\t') # Dict Reader uses the header column names
-
-        # Write column headers manually
-        row_writer.writeheader()
-
-        # Compute the values (onset, duration, response time etc.)
-        for rows in row_reader:
-            blockNum = rows['Blocks']
-            # Cast float to maintain the decimal points
-            faceOnsetTime = float(rows['Face.OnsetTime'])/float(1000) #CG
-            faceOffsetTime = float(rows['Face.OffsetTime'])/float(1000)
-            faceTTL = float(rows['WaitForTTL.RTTime'])/float(1000)
-            faceOnsetTTLAdjusted = faceOnsetTime - faceTTL
-            faceOnsetTimeTrimmed = faceOnsetTTLAdjusted - 8 #(float(rows['Face.OnsetTime'])-8000)/float(1000)
-            faceResponseTime = float(rows['Face.RT'])/float(1000) #CB
-            faceDuration = float(faceOffsetTime - faceOnsetTime)
-            faceNumber = rows['FaceFile'][:2]
-            faceGender = rows['Gender']
-            faceResponse = rows['Face.RESP']
-            faceCorrectResponse = rows['Face.CRESP']
-            faceCorrect = rows['Face.ACC']
-            ones = rows['Group']
-            IAPSValence = rows['valencecategory']
-
-            taskNum = str(taskNum)
-            if taskNum in blockNum:
-                if faceCorrect == '1':
-                    variable = 'Y'
-                elif faceCorrect == '0':
-                    variable = 'N'
-                row_writer.writerow({'onset': faceOnsetTTLAdjusted,
-                'duration': faceDuration,
-                'Response_Time_Face': faceResponseTime,
-                'database': "faces",
-                'stimulus': faceNumber,
-                'correct': variable,
-                'valence': "n/a",
-                'valenceFollowing': IAPSValence,
-                'gender': faceGender,
-                'response': faceResponse,
-                'face_correct_response': faceCorrectResponse,
-                'sociality': "n/a",
-                'groups': ones,
-                'onset_trimmed': faceOnsetTimeTrimmed,
-                'Blocks':rows['Blocks']})
-
-    #lineterminator is paramter in csv.writer. it is default set to '\r\n' causing double spacing
-    def reader_and_writer(newTsv, tsvFile):
-        writer = csv.writer(newTsv, delimiter='\t', lineterminator='\n')
-        reader = csv.reader(tsvFile, delimiter='\t')
-
-        for row in reader:
-            writer.writerow(row)
 
     def block_one_data_manipulation(temporarySmallPath, subNum, niftiPath):
         # Read in csv
@@ -204,43 +158,18 @@ class ScanEprimeDivider:
         df3.to_csv(niftiPath + '/sub-' + subNum + '/func/sub-' + subNum + '_task-EmotionRegulation_run-01_events.tsv', sep='\t', index=None) # index = None --> removes first column of the index which are created by to_csv Pandas dataframe
         print ('----------Onset file(s) for ' + subNum + '-01 created----------')
 
-    def block_two_data_manipulation(temporarySmallPath, subNum, niftiPath):
-        # Read in csv to Pandas
-        df1 = pd.read_csv(temporarySmallPath + 'sub-' + subNum + '_IAPS-02.tsv', sep='\t')
-        df2 = pd.read_csv(temporarySmallPath + 'sub-' + subNum + '_faces-02.tsv', sep='\t')
-        # join the two data frames along rows
-        df3 = pd.concat([df1, df2])
-        # Sort everything by onset column
-        df3 = df3.sort_values('onset')
-        # Remove unnecessary blocks column
-        del df3['Blocks']
-        # Use loc and isnull to replace no responses to "n/a"
-        df3.loc[(df3['Response_Time_Face'] == 0), 'Response_Time_Face'] = "n/a"
-        df3.loc[(df3['response'].isnull()), 'response'] = "n/a"
-        # Write the datafram into tsv format
-        df3.to_csv(niftiPath + '/sub-' + subNum + '/func/sub-' + subNum + '_task-EmotionRegulation_run-02_events.tsv', sep='\t', index=None) # index = None --> removes first column of the index which are created by to_csv Pandas dataframe
-        print ('----------Onset file(s) for ' + subNum + '-02 created----------')
 
-    def block_three_data_manipulation(temporarySmallPath, subNum, niftiPath):
-        # Read in csv to Pandas
-        df1 = pd.read_csv(temporarySmallPath + 'sub-' + subNum + '_IAPS-03.tsv', sep='\t')
-        df2 = pd.read_csv(temporarySmallPath + 'sub-' + subNum + '_faces-03.tsv', sep='\t')
-        # join the two data frames along rows
-        df3 = pd.concat([df1, df2])
-        # Sort everything by onset column
-        df3 = df3.sort_values('onset')
-        # Remove unnecessary blocks column
-        del df3['Blocks']
-        # Use loc and isnull to replace no responses to "n/a"
-        df3.loc[(df3['Response_Time_Face'] == 0), 'Response_Time_Face'] = "n/a"
-        df3.loc[(df3['response'].isnull()), 'response'] = "n/a"
-        # Write the datafram into tsv format
-        df3.to_csv(niftiPath + '/sub-' + subNum + '/func/sub-' + subNum + '_task-EmotionRegulation_run-03_events.tsv', sep='\t', index=None) # index = None --> removes first column of the index which are created by to_csv Pandas dataframe
-        print ('----------Onset file(s) for ' + subNum + '-03 created----------')
 class ScanEprimeConverter:
 
+	# def __init__(self, subject_number, scan_eprime_raw_dir="/study/midus3/raw-data/scan_eprime/data/", 
+	# 	scan_eprime_output_dir="/study/midus3/processed_data/Temporary/Big/", study_name="MIDUS3"):
+	# 	self.scan_eprime_raw_dir = scan_eprime_raw_dir
+	# 	self.scan_eprime_output_dir = scan_eprime_output_dir
+	# 	self.study_name = study_name
+	# 	self.subject_number = subject_number
+
 	def __init__(self, subject_number, scan_eprime_raw_dir="/study/midus3/raw-data/scan_eprime/data/", 
-		scan_eprime_output_dir="/study/midus3/processed_data/Temporary/Big/", study_name="MIDUS3"):
+		scan_eprime_output_dir="/study/midus3/processed_data/", study_name="MIDUS3"):
 		self.scan_eprime_raw_dir = scan_eprime_raw_dir
 		self.scan_eprime_output_dir = scan_eprime_output_dir
 		self.study_name = study_name
@@ -419,11 +348,11 @@ class NiftiConverter:
 				os.makedirs(self.nifti_dir + subject_dir + "/asl/", exist_ok=True)
 				self.convert(scan, scan_type, subject_dir, scan_name)
 
-nifti_converter = NiftiConverter()
-nifti_converter.process()
-rotator = NiftiRotator("001")
-rotator.process()
-eprime_converter = ScanEprimeConverter()
+# nifti_converter = NiftiConverter()
+# nifti_converter.process()
+# rotator = NiftiRotator("001")
+# rotator.process()
+eprime_converter = ScanEprimeConverter(001)
 eprime_converter.process()
 
 
