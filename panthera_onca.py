@@ -15,6 +15,50 @@ import csv
 import pandas as pd
 
 
+# use study name caps.....
+class BrainExtractor:
+
+	def __init__(self, subject_number, study_name):
+		self.input_dir = f"/study/{study_name}/processed_data/"
+		self.output_dir = f"/study/{study_name}/processed_data/"
+		self.study_name = study_name
+		self.subject_number = subject_number
+		self.subject_dir = "sub-" + subject_number
+		self.study_name_all_caps = study_name.upper()
+
+	# def identify_input_file(self):
+	# 	infile = f'{self.input_dir}{study_name_all_caps}_Imaging/{self.subject_dir}/anat/{self.subject_dir}_T1w.nii.gz'
+	# 	return infile
+
+	# def identify_bet_output_file(self):
+	# 	outfile = f'{self.output_dir}{study_name_all_caps}_Imaging_Analysis/{self.subject_dir}/anat/{self.subject_dir}_T1w_brain.nii.gz'
+	# 	return outfile
+
+	# def create_output_dir(self):
+	# 	outdir = f'{self.output_dir}{study_name_all_caps}_Imaging_Analysis/{self.subject_dir}/anat'
+	# 	os.makedirs(outdir, exist_ok = True)
+		
+	def identify_input_file(self):
+		infile = f'{self.input_dir}{self.subject_dir}/anat/{self.subject_dir}_T1w.nii.gz'
+		return infile
+
+	def identify_bet_output_file(self):
+		outfile = f'{self.output_dir}{self.subject_dir}/anat/{self.subject_dir}_T1w_brain.nii.gz'
+		return outfile
+
+	def skull_strip_bet(self, infile, outfile):
+		os.system(f'bet {infile} {outfile} -m -f 0.3 -R')
+
+	def skll_strip_bse(self, infile, outfile):
+		pass
+
+	def process(self):
+		infile = self.identify_input_file()
+		outfile = self.identify_bet_output_file()
+		self.skull_strip_bet(infile, outfile)
+
+
+
 class OnsetCreator:
 
 	# def __init__(self, subject_number, scan_eprime_by_run_dir="/study/midus3/processed_data/Temporary/Small/, study_name="midus3"):
@@ -223,7 +267,7 @@ class ScanEprimeConverter:
 	# 	self.subject_number = subject_number
 
 	def __init__(self, subject_number, study_name):
-		self.scan_eprime_raw_dir = f"/study/{study_name}/raw_data/scan_eprime/data/"
+		self.scan_eprime_raw_dir = f"/study/{study_name}/raw-data/scan_eprime/data/"
 		self.scan_eprime_output_dir = f"/study/{study_name}/processed_data/"
 		self.study_name = study_name
 		self.subject_number = subject_number
@@ -237,7 +281,7 @@ class ScanEprimeConverter:
 
 
 	def identify_target_raw_eprime(self):
-		infile = f'{self.scan_eprime_raw_dir}midus3_order[1-2]_eyetracking_v[0][0-2]-{self.subject_number}-{self.subject_number}.txt'
+		infile = f'{self.scan_eprime_raw_dir}midus3_order[1-2]_eyetracking_v0[0-2]-{self.subject_number}-{self.subject_number}.txt'
 		return infile
 
 	def set_outfile_name(self):
