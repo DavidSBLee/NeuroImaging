@@ -17,15 +17,15 @@ import pandas as pd
 
 class OnsetCreator:
 
-	# def __init__(self, subject_number, scan_eprime_by_run_dir="/study/midus3/processed_data/Temporary/Small/, study_name="MIDUS3"):
+	# def __init__(self, subject_number, scan_eprime_by_run_dir="/study/midus3/processed_data/Temporary/Small/, study_name="midus3"):
 	# 	self.scan_eprime_by_run_dir = scan_eprime_by_run_dir
 	# 	self.study_name = study_name
 	# 	self.subject_number = subject_number
 
-	def __init__(self, subject_number, scan_eprime_by_run_dir="/study/midus3/processed_data/", onset_dir="/study/midus3/processed_data/", study_name="MIDUS3"):
-		self.scan_eprime_by_run_dir = scan_eprime_by_run_dir
+	def __init__(self, subject_number, study_name):
+		self.scan_eprime_by_run_dir = f"/study/{study_name}/processed_data/"
 		self.study_name = study_name
-		self.onset_dir = onset_dir
+		self.onset_dir = f"/study/{study_name}/processed_data/"
 		self.subject_number = subject_number
 
 	def identify_target_data(self, task_number):
@@ -63,17 +63,16 @@ class OnsetCreator:
 class ScanEprimeDivider:
 
 	# def __init__(self, subject_number, scan_eprime_dir="/study/midus3/processed_data/Temporary/Big/", 
-	# 	scan_eprime_by_run_output_dir="/study/midus3/processed_data/Temporary/Small/", study_name="MIDUS3"):
+	# 	scan_eprime_by_run_output_dir="/study/midus3/processed_data/Temporary/Small/", study_name="midus3"):
 	# 	self.scan_eprime_dir = scan_eprime_raw_dir
 	# 	self.scan_eprime_by_run_output_dir = scan_eprime_output_dir
 	# 	self.study_name = study_name
 	# 	self.subject_number = subject_number
 
 
-	def __init__(self, subject_number, scan_eprime_dir="/study/midus3/processed_data/", 
-		scan_eprime_by_run_output_dir="/study/midus3/processed_data/", study_name="MIDUS3"):
-		self.scan_eprime_dir = scan_eprime_dir
-		self.scan_eprime_by_run_output_dir = scan_eprime_by_run_output_dir
+	def __init__(self, subject_number, study_name):
+		self.scan_eprime_dir = f"/study/{study_name}/processed_data/"
+		self.scan_eprime_by_run_output_dir = f"/study/{study_name}/processed_data/"
 		self.study_name = study_name
 		self.subject_number = subject_number
 
@@ -217,16 +216,15 @@ class ScanEprimeDivider:
 class ScanEprimeConverter:
 
 	# def __init__(self, subject_number, scan_eprime_raw_dir="/study/midus3/raw-data/scan_eprime/data/", 
-	# 	scan_eprime_output_dir="/study/midus3/processed_data/Temporary/Big/", study_name="MIDUS3"):
+	# 	scan_eprime_output_dir="/study/midus3/processed_data/Temporary/Big/", study_name="midus3"):
 	# 	self.scan_eprime_raw_dir = scan_eprime_raw_dir
 	# 	self.scan_eprime_output_dir = scan_eprime_output_dir
 	# 	self.study_name = study_name
 	# 	self.subject_number = subject_number
 
-	def __init__(self, subject_number, scan_eprime_raw_dir="/study/midus3/raw-data/scan_eprime/data/", 
-		scan_eprime_output_dir="/study/midus3/processed_data/", study_name="MIDUS3"):
-		self.scan_eprime_raw_dir = scan_eprime_raw_dir
-		self.scan_eprime_output_dir = scan_eprime_output_dir
+	def __init__(self, subject_number, study_name):
+		self.scan_eprime_raw_dir = f"/study/{study_name}/raw_data/scan_eprime/data/"
+		self.scan_eprime_output_dir = f"/study/{study_name}/processed_data/"
 		self.study_name = study_name
 		self.subject_number = subject_number
 
@@ -254,8 +252,8 @@ class ScanEprimeConverter:
 
 class NiftiRotator:
 
-	def __init__(self, subject_number, nifti_dir="/study/midus3/processed_data/", study_name="MIDUS3"):
-		self.nifti_dir = nifti_dir
+	def __init__(self, subject_number, study_name):
+		self.nifti_dir = f"/study/{study_name}/processed_data/"
 		self.study_name = study_name
 		self.subject_number = subject_number
 		self.subject_dir = "sub-" + subject_number
@@ -302,106 +300,107 @@ class NiftiRotator:
 
 class NiftiConverter:
 
-	def __init__(self, nifti_dir="/study/midus3/processed_data/", raw_dir="/study/midus3/raw-data/", study_name="MIDUS3"):
+	def __init__(self, subject_number, study_name):
 		
-		self.nifti_dir = nifti_dir
-		self.raw_dir = raw_dir
+		self.nifti_dir = f"/study/{study_name}/processed_data/"
+		self.raw_dir = f"/study/{study_name}/raw-data/"
 		self.study_name = study_name
+		self.subject_number = subject_number
+		self.subject_dir = "sub-" + subject_number
+		self.subject_dicom_path = self.raw_dir + subject_number
 
-	def inspect_dicoms(self):
-		# raw DICOMs in a set
-		raw_dicoms = glob.glob(self.raw_dir + "[0-9][0-9][0-9]")
-		dicom_set = set([int(raw.split('/')[4][0:]) for raw in raw_dicoms]) # extracts INTEGERS w/o "0"
-		#dicoms.sort()
-		return dicom_set
+	# def inspect_dicoms(self):
+	# 	# raw DICOMs in a set
+	# 	raw_dicoms = glob.glob(self.raw_dir + "[0-9][0-9][0-9]")
+	# 	dicom_set = set([int(raw.split('/')[4][0:]) for raw in raw_dicoms]) # extracts INTEGERS w/o "0"
+	# 	#dicoms.sort()
+	# 	return dicom_set
 
-	def inspect_niftis(self):
-		# scan subjects that already have niftis
-		niftis = glob.glob(self.nifti_dir + self.study_name + "_Imaging/sub-[0-9][0-9][0-9]")
-		nifti_set = set([int(nifti.split('/')[5][4:7]) for nifti in niftis]) # in python the set is called hash table
-		#niftis.sort()
-		return nifti_set
+	# def inspect_niftis(self):
+	# 	# scan subjects that already have niftis
+	# 	niftis = glob.glob(self.nifti_dir + self.study_name + "_Imaging/sub-[0-9][0-9][0-9]")
+	# 	nifti_set = set([int(nifti.split('/')[5][4:7]) for nifti in niftis]) # in python the set is called hash table
+	# 	#niftis.sort()
+	# 	return nifti_set
 
-	def identify_target_subject(self):
-		dicom_set = self.inspect_dicoms()
-		nifti_set = self.inspect_niftis()
+	# def identify_target_subject(self):
+	# 	dicom_set = self.inspect_dicoms()
+	# 	nifti_set = self.inspect_niftis()
 
-		for dicom_number in dicom_set:
-			# cast string and zero-pad the subject numbers
-			dicom_number_string = str(dicom_number)
-			dicom_number_zero_padded = ["0" for i in range(3-len(dicom_number_string))] + [dicom_number_string]
-			subject_number = ''.join(dicom_number_zero_padded)
-			subject_dir = "sub-" + subject_number
-			subject_dicom_path = self.raw_dir + subject_number
+	# 	for dicom_number in dicom_set:
+	# 		# cast string and zero-pad the subject numbers
+	# 		dicom_number_string = str(dicom_number)
+	# 		dicom_number_zero_padded = ["0" for i in range(3-len(dicom_number_string))] + [dicom_number_string]
+	# 		subject_number = ''.join(dicom_number_zero_padded)
+	# 		subject_dir = "sub-" + subject_number
+	# 		subject_dicom_path = self.raw_dir + subject_number
 
-			if dicom_number in nifti_set:
-				pass
+	# 		if dicom_number in nifti_set:
+	# 			pass
 
-			elif dicom_number not in nifti_set:
-				return subject_dir, subject_dicom_path, subject_number
+	# 		elif dicom_number not in nifti_set:
+	# 			return subject_dir, subject_dicom_path, subject_number
 
 	def extract_scan_info(self, scan_path):
 		scan_name = scan_path.split('/')[6][6:]
 		return scan_name
 
 	def convert(self, scan_path, scan_type, subject_dir, scan_name):
-		#print(self.out_path)
-		#os.system("convert_dcm2niix %s %s/%s_%s.nii.gz"%(scan_path, self.nifti_dir, subject_number, scan_name))
-		os.system(f'convert_dcm2niix {scan_path} {self.nifti_dir}{subject_dir}/{scan_type}/{subject_dir}_{scan_name}.nii.gz')
+		os.system(f'convert_dcm2niix {scan_path} {self.nifti_dir}{self.subject_dir}/{scan_type}/{self.subject_dir}_{scan_name}.nii.gz')
 
 	def process(self):
 
-		subject_dir, subject_dicom_path, subject_number = self.identify_target_subject()
+		#subject_dir, subject_dicom_path, subject_number = self.identify_target_subject()
 
-		scans = sorted(glob.glob(subject_dicom_path + "/dicoms/*/*.tgz"))
+		scans = sorted(glob.glob(self.subject_dicom_path + "/dicoms/*/*.tgz"))
 
 		for scan in scans:
 			scan_name = self.extract_scan_info(scan)
 
 			if scan_name == "T1w": # should be 'ORIG_T1w' for scans with pure-filtered T1w's
 				scan_type = "anat"
-				os.makedirs(self.nifti_dir + subject_dir + "/anat/", exist_ok=True)
-				self.convert(scan, scan_type, subject_dir, scan_name)
+				os.makedirs(self.nifti_dir + self.subject_dir + "/anat/", exist_ok=True)
+				self.convert(scan, scan_type, self.subject_dir, scan_name)
 
 			if scan_name == "task-ER_run-1_bold":
 				scan_type = "func"
-				os.makedirs(self.nifti_dir + subject_dir + "/func/", exist_ok=True)
-				self.convert(scan, scan_type, subject_dir, scan_name)
+				os.makedirs(self.nifti_dir + self.subject_dir + "/func/", exist_ok=True)
+				self.convert(scan, scan_type, self.subject_dir, scan_name)
 
 			if scan_name == "task-ER_run-2_bold":
 				scan_type = "func"
-				os.makedirs(self.nifti_dir + subject_dir + "/func/", exist_ok=True)
-				self.convert(scan, scan_type, subject_dir, scan_name)
+				os.makedirs(self.nifti_dir + self.subject_dir + "/func/", exist_ok=True)
+				self.convert(scan, scan_type, self.subject_dir, scan_name)
 
 			if scan_name == "task-ER_run-3_bold":
 				scan_type = "func"
-				os.makedirs(self.nifti_dir + subject_dir + "/func/", exist_ok=True)
-				self.convert(scan, scan_type, subject_dir, scan_name)
+				os.makedirs(self.nifti_dir + self.subject_dir + "/func/", exist_ok=True)
+				self.convert(scan, scan_type, self.subject_dir, scan_name)
 
 			if scan_name == "task-rest_bold":
 				scan_type = "func"
-				os.makedirs(self.nifti_dir + subject_dir + "/func/", exist_ok=True)
-				self.convert(scan, scan_type, subject_dir, scan_name)
+				os.makedirs(self.nifti_dir + self.subject_dir + "/func/", exist_ok=True)
+				self.convert(scan, scan_type, self.subject_dir, scan_name)
 
 			if scan_name == "dwi":
 				scan_type = "dwi"
-				os.makedirs(self.nifti_dir + subject_dir + "/dwi/", exist_ok=True)
-				self.convert(scan, scan_type, subject_dir, scan_name)
+				os.makedirs(self.nifti_dir + self.subject_dir + "/dwi/", exist_ok=True)
+				self.convert(scan, scan_type, self.subject_dir, scan_name)
 
 			if scan_name == "WATER__fmap":
 				scan_type = "fmap"
-				os.makedirs(self.nifti_dir + subject_dir + "/fmap/", exist_ok=True)
-				self.convert(scan, scan_type, subject_dir, "magnitude")
+				os.makedirs(self.nifti_dir + self.subject_dir + "/fmap/", exist_ok=True)
+				self.convert(scan, scan_type, self.subject_dir, "magnitude")
 
 			if scan_name == "FieldMap__fmap":
 				scan_type = "fmap"
-				os.makedirs(self.nifti_dir + subject_dir + "/fmap/", exist_ok=True)
-				self.convert(scan, scan_type, subject_dir, "fieldmap")
+				os.makedirs(self.nifti_dir + self.subject_dir + "/fmap/", exist_ok=True)
+				self.convert(scan, scan_type, self.subject_dir, "fieldmap")
 
 			if scan_name == "asl":
 				scan_type = "asl"
-				os.makedirs(self.nifti_dir + subject_dir + "/asl/", exist_ok=True)
-				self.convert(scan, scan_type, subject_dir, scan_name)
+				os.makedirs(self.nifti_dir + self.subject_dir + "/asl/", exist_ok=True)
+				self.convert(scan, scan_type, self.subject_dir, scan_name)
 
 # nifti_converter = NiftiConverter()
 # nifti_converter.process()
