@@ -14,8 +14,50 @@ import glob
 import csv
 import pandas as pd
 
+class BiasCorrector:
 
-# use study name caps.....
+	def __init__(self, subject_number, study_name):
+		self.input_dir = f"/study/{study_name}/processed_data/"
+		self.output_dir = f"/study/{study_name}/processed_data/"
+		self.study_name = study_name
+		self.subject_number = subject_number
+		self.subject_dir = "sub-" + subject_number
+
+	def identify_input_file(self):
+		infile = f'{self.input_dir}{self.subject_dir}/anat/{self.subject_dir}_T1w.nii.gz'
+		return infile
+
+	def identify_mask_output_file(self):
+		mask_outfile = f'{self.output_dir}{self.subject_dir}/anat/{self.subject_dir}_T1w_N4Corrected_brain_mask.nii.gz'
+		return mask_outfile
+
+	def create_tempory_directory(self):
+		temporary_directory = f'{self.input_dir}{self.subject_dir}/anat/tmp'
+		os.makedirs(temporary_directory, exist_ok=True)
+		return temporay_directory
+
+	def identify_iteration_output_file(self):
+		temporary_directory = self.create_tempory_directory()
+		iteration_outfile = f'{temporary_directory}{self.subject_dir}_T1w_N4Corrected_iter1.nii.gz'
+		return iteration_outfile
+
+	def bias_correct(self):
+		infile = self.identify_input_file()
+		mask_outfile = self.identify_mask_output_file()
+		iteration_outfile = self.identify_iteration_output_file()
+		os.system(f'N4BiasFieldCorrection -i {infile} -x {mask_outfile} -o {iteration_outfile}')
+
+		for i in range(1, 6):
+			temporary_directory = self.create_tempory_directory()
+			iteration_infile = f'{temporary_directory}{self.subject_dir}_T1w_N4Corrected_iter{i}.nii.gz'
+			i += 1 
+			iteration_outfile = f'{temporary_directory}{self.subject_dir}_T1w_N4Corrected_iter{i}.nii.gz'
+			os.system(f'N4BiasFieldCorrection -i {iteration_infile} -x {mask_outfile} -o {iteration_outfile}')
+
+	def process(self):
+		self.create_tempory_directory()
+		self.bias_correct()
+
 class BrainExtractor:
 
 	def __init__(self, subject_number, study_name):
@@ -37,7 +79,8 @@ class BrainExtractor:
 	# def create_output_dir(self):
 	# 	outdir = f'{self.output_dir}{study_name_all_caps}_Imaging_Analysis/{self.subject_dir}/anat'
 	# 	os.makedirs(outdir, exist_ok = True)
-		
+
+
 	def identify_input_file(self):
 		infile = f'{self.input_dir}{self.subject_dir}/anat/{self.subject_dir}_T1w.nii.gz'
 		return infile
