@@ -13,10 +13,117 @@ import os
 import glob
 import csv
 import pandas as pd
+import shutil
+
+# TO DO
+# 2. fix bias correction....
+# 3. add print statements in general
+# 4. all paths need to be changed (make it more global?)
+# 5. qa all the outputs. probably just compare and contrast with the old one
+
+class MotionEvaluator:
+	def __init__(self, study_name, subject_number):
+		self.input_dir = f"/study/{study_name}/processed_data/"
+		self.output_dir = f"/study/{study_name}/processed_data/"
+		self.study_name = study_name
+		self.subject_number = subject_number
+		self.subject_dir = "sub-" + subject_number
+
+	def identify_qa_directory(self):
+		qa_dir = f'{self.input_dir}{self.subject_dir}/func/QA'
+		return qa_dir
+
+	def create_qa_directory(self):
+		qa_dir = self.identify_qa_directory()
+		os.makedirs(qa_dir, exist_ok=True)
+
+	def identify_html_file(self):
+		qa_dir = self.identify_qa_directory()
+		html_file = f'{qa_dir}/motion.html'
+		return html_file
+
+	def evaluate_task_fmri_motion(self):
+		qa_dir = self.identify_qa_directory()
+		html_file = self.identify_html_file()
+		volume_trimmer = VolumeTrimmer(self.study_name, self.subject_number)
+		for i in range(1,4):
+			infile = volume_trimmer.identify_task_fmri_trimmed_file("EmotionRegulation", i)
+			confound_outfile = f'{qa_dir}/0{i}_confound.txt'
+			plot_outfile = f'{qa_dir}/fd_plot_0{i}.png'
+			outlier_outfile = f'{qa_dir}/outlier_output_0{i}.txt'
+			os.system(f'fsl_motion_outliers -i {infile} -o {confound_outfile} --fd --thresh=0.5 -p {plot_outfile} -v > {outlier_outfile}')
+			if not os.path.isfile(confound_outfile):
+				os.mknod(confound_outfile)
+			os.system(f'cat {outlier_outfile} >> {html_file}')
+			os.system(f"echo '<br><br> FD plot {self.subject_number} 0{i} <br><IMG BORDER=0 SRC={plot_outfile} WIDTH=100%></BODY></HTML> <p>==========================================================<p>' >> {html_file}")
+
+	def evaluate_resting_fmri_motion(self):
+		qa_dir = self.identify_qa_directory()
+		html_file = self.identify_html_file()
+		volume_trimmer = VolumeTrimmer(self.study_name, self.subject_number)
+		infile = volume_trimmer.identify_resting_fmri_trimmed_file()
+		confound_outfile = f'{qa_dir}/04_confound.txt'
+		plot_outfile = f'{qa_dir}/fd_plot_04.png'
+		outlier_outfile = f'{qa_dir}/outlier_output_04.txt'
+		os.system(f'fsl_motion_outliers -i {infile} -o {confound_outfile} --fd --thresh=0.2 -p {plot_outfile} -v > {outlier_outfile}')
+		if not os.path.isfile(confound_outfile):
+				os.mknod(confound_outfile)
+		os.system(f'cat {outlier_outfile} >> {html_file}')
+		os.system(f"echo '<br><br> FD plot {self.subject_number} 04 <br><IMG BORDER=0 SRC={plot_outfile} WIDTH=100%></BODY></HTML> <p>==========================================================<p>' >> {html_file}")
+
+
+	def process(self):
+		self.create_qa_directory()
+		self.evaluate_task_fmri_motion()
+		self.evaluate_resting_fmri_motion()
+
+class VolumeTrimmer:
+
+	def __init__(self, study_name, subject_number):
+		self.input_dir = f"/study/{study_name}/processed_data/"
+		self.output_dir = f"/study/{study_name}/processed_data/"
+		self.study_name = study_name
+		self.subject_number = subject_number
+		self.subject_dir = "sub-" + subject_number
+
+	def identify_task_fmri_input_file(self, task_type, run_number):
+		infile = f'{self.input_dir}{self.subject_dir}/func/{self.subject_dir}_task-{task_type}_run-0{run_number}_bold.nii.gz'
+		infile = infile[:-7]
+		return infile
+
+	def identify_task_fmri_trimmed_file(self, task_type, run_number):
+		outfile = f'{self.output_dir}{self.subject_dir}/func/{self.subject_dir}_task-{task_type}_run-0{run_number}_bold.nii.gz'
+		outfile = outfile[:-7] + "_mod"
+		return outfile
+
+	def trim_task_fmri_volumes(self, number_volume=4):
+		for i in range(1,4):
+			infile = self.identify_task_fmri_input_file("EmotionRegulation", i)
+			outfile = self.identify_task_fmri_trimmed_file("EmotionRegulation", i)
+			os.system(f'fslroi {infile} {outfile} {number_volume} -1')
+		
+	def identify_resting_fmri_input_file(self):
+		infile = f'{self.input_dir}{self.subject_dir}/func/{self.subject_dir}_task-rest_bold.nii.gz'
+		infile = infile[:-7]
+		return infile
+
+	def identify_resting_fmri_trimmed_file(self):
+		outfile = f'{self.output_dir}{self.subject_dir}/func/{self.subject_dir}_task-rest_bold.nii.gz'
+		outfile = outfile[:-7] + "_mod"
+		return outfile
+
+	def trim_resting_fmri_volumes(self, number_volume=4):
+		infile = self.identify_resting_fmri_input_file()
+		outfile = self.identify_resting_fmri_trimmed_file()
+		os.system(f'fslroi {infile} {outfile} {number_volume} -1')
+
+	def process(self):
+		self.trim_task_fmri_volumes()
+		self.trim_resting_fmri_volumes()		
 
 class BiasCorrector:
 
-	def __init__(self, subject_number, study_name):
+	def __init__(self, study_name, subject_number):
 		self.input_dir = f"/study/{study_name}/processed_data/"
 		self.output_dir = f"/study/{study_name}/processed_data/"
 		self.study_name = study_name
@@ -32,35 +139,105 @@ class BiasCorrector:
 		return mask_outfile
 
 	def create_tempory_directory(self):
-		temporary_directory = f'{self.input_dir}{self.subject_dir}/anat/tmp'
+		temporary_directory = f'{self.input_dir}{self.subject_dir}/anat/tmp/'
 		os.makedirs(temporary_directory, exist_ok=True)
-		return temporay_directory
 
-	def identify_iteration_output_file(self):
-		temporary_directory = self.create_tempory_directory()
-		iteration_outfile = f'{temporary_directory}{self.subject_dir}_T1w_N4Corrected_iter1.nii.gz'
+	def identify_temporary_directory(self):
+		temporary_directory = f'{self.input_dir}{self.subject_dir}/anat/tmp/'
+		return temporary_directory
+
+	def identify_first_iteration_output_file(self):
+		temporary_directory = self.identify_temporary_directory()
+		first_iteration_outfile = f'{temporary_directory}{self.subject_dir}_T1w_N4Corrected_iter1.nii.gz'
+		return first_iteration_outfile
+
+	def identify_final_iteration_output_file(self):
+		iteration_outfile = f'{self.output_dir}{self.subject_dir}/anat/{self.subject_dir}_T1w_N4Corrected.nii.gz'
 		return iteration_outfile
 
 	def bias_correct(self):
 		infile = self.identify_input_file()
 		mask_outfile = self.identify_mask_output_file()
-		iteration_outfile = self.identify_iteration_output_file()
-		os.system(f'N4BiasFieldCorrection -i {infile} -x {mask_outfile} -o {iteration_outfile}')
+		first_iteration_outfile = self.identify_first_iteration_output_file()
+		temporary_directory = self.identify_temporary_directory()
+		os.system(f'N4BiasFieldCorrection -i {infile} -x {mask_outfile} -o {first_iteration_outfile}')
 
 		for i in range(1, 6):
-			temporary_directory = self.create_tempory_directory()
 			iteration_infile = f'{temporary_directory}{self.subject_dir}_T1w_N4Corrected_iter{i}.nii.gz'
 			i += 1 
-			iteration_outfile = f'{temporary_directory}{self.subject_dir}_T1w_N4Corrected_iter{i}.nii.gz'
-			os.system(f'N4BiasFieldCorrection -i {iteration_infile} -x {mask_outfile} -o {iteration_outfile}')
+			temporary_iteration_outfile = f'{temporary_directory}{self.subject_dir}_T1w_N4Corrected_iter{i}.nii.gz'
+			os.system(f'N4BiasFieldCorrection -i {iteration_infile} -x {mask_outfile} -o {temporary_iteration_outfile}')
+
+	def extract_final_iteration(self):
+		temporary_directory = self.identify_temporary_directory()
+		infile = f'{temporary_directory}{self.subject_dir}_T1w_N4Corrected_iter6.nii.gz'
+		outfile = self.identify_final_iteration_output_file()
+		shutil.copyfile(infile, outfile)
+
+	def remove_temporary_directory(self):
+		temporary_directory = self.identify_temporary_directory()
+		shutil.rmtree(temporary_directory)
+
 
 	def process(self):
 		self.create_tempory_directory()
 		self.bias_correct()
+		self.extract_final_iteration()
+		self.remove_temporary_directory()
 
-class BrainExtractor:
+class BSEBrainExtractor:
 
-	def __init__(self, subject_number, study_name):
+	def __init__(self, study_name, subject_number):
+		self.input_dir = f"/study/{study_name}/processed_data/"
+		self.output_dir = f"/study/{study_name}/processed_data/"
+		self.study_name = study_name
+		self.subject_number = subject_number
+		self.subject_dir = "sub-" + subject_number
+		self.study_name_all_caps = study_name.upper()
+
+	# def identify_input_file(self):
+	# 	infile = f'{self.input_dir}{study_name_all_caps}_Imaging/{self.subject_dir}/anat/{self.subject_dir}_T1w.nii.gz'
+	# 	return infile
+
+	# def identify_bet_output_file(self):
+	# 	outfile = f'{self.output_dir}{study_name_all_caps}_Imaging_Analysis/{self.subject_dir}/anat/{self.subject_dir}_T1w_brain.nii.gz'
+	# 	return outfile
+
+	# def create_output_dir(self):
+	# 	outdir = f'{self.output_dir}{study_name_all_caps}_Imaging_Analysis/{self.subject_dir}/anat'
+	# 	os.makedirs(outdir, exist_ok = True)
+
+
+	def identify_input_file(self):
+		infile = f'{self.input_dir}{self.subject_dir}/anat/{self.subject_dir}_T1w.nii.gz'
+		return infile
+
+	def identify_bse_output_file(self):
+		bse_outfile = f'{self.output_dir}{self.subject_dir}/anat/{self.subject_dir}_T1w_N4Corrected_brain.nii.gz'
+		return bse_outfile
+ 
+	def identify_bse_mask_file(self):
+		bse_binarized_mask_outfile = f'{self.output_dir}{self.subject_dir}/anat/{self.subject_dir}_T1w_N4Corrected_brain_mask.nii.gz'
+		return bse_binarized_mask_outfile
+
+	def skull_strip_bse(self, infile, outfile):
+		os.system(f'bse -i {infile} -o {outfile} --auto')#Skull-strip unfiltered T1w
+
+	def binarize_bse_mask(self, infile, outfile):
+		#Create binary brain mask using fslmaths
+		os.system(f'fslmaths {infile} -thr 0.5 -bin {outfile}')#Create Binary mask
+
+	def process(self):
+		infile = self.identify_input_file()
+		outfile = self.identify_bse_output_file()
+		mask_outfile = self.identify_bse_mask_file()
+		self.skull_strip_bse(infile, outfile)
+		self.binarize_bse_mask(outfile, mask_outfile)
+
+
+class BetBrainExtractor:
+
+	def __init__(self, study_name, subject_number):
 		self.input_dir = f"/study/{study_name}/processed_data/"
 		self.output_dir = f"/study/{study_name}/processed_data/"
 		self.study_name = study_name
@@ -86,14 +263,11 @@ class BrainExtractor:
 		return infile
 
 	def identify_bet_output_file(self):
-		outfile = f'{self.output_dir}{self.subject_dir}/anat/{self.subject_dir}_T1w_brain.nii.gz'
-		return outfile
+		bet_outfile = f'{self.output_dir}{self.subject_dir}/anat/{self.subject_dir}_T1w_brain.nii.gz'
+		return bet_outfile
 
 	def skull_strip_bet(self, infile, outfile):
 		os.system(f'bet {infile} {outfile} -m -f 0.3 -R')
-
-	def skll_strip_bse(self, infile, outfile):
-		pass
 
 	def process(self):
 		infile = self.identify_input_file()
@@ -109,7 +283,7 @@ class OnsetCreator:
 	# 	self.study_name = study_name
 	# 	self.subject_number = subject_number
 
-	def __init__(self, subject_number, study_name):
+	def __init__(self, study_name, subject_number):
 		self.scan_eprime_by_run_dir = f"/study/{study_name}/processed_data/"
 		self.study_name = study_name
 		self.onset_dir = f"/study/{study_name}/processed_data/"
@@ -157,7 +331,7 @@ class ScanEprimeDivider:
 	# 	self.subject_number = subject_number
 
 
-	def __init__(self, subject_number, study_name):
+	def __init__(self, study_name, subject_number):
 		self.scan_eprime_dir = f"/study/{study_name}/processed_data/"
 		self.scan_eprime_by_run_output_dir = f"/study/{study_name}/processed_data/"
 		self.study_name = study_name
@@ -259,25 +433,25 @@ class ScanEprimeDivider:
 
 			task_number = str(task_number)
 			if task_number in block_number:
-			    if face_correct == '1':
-			        variable = 'Y'
-			    elif face_correct == '0':
-			        variable = 'N'
-			    row_writer.writerow({'onset': face_onset_TTL_adjusted,
-			    'duration': face_duration,
-			    'Response_Time_Face': face_response_time,
-			    'database': "faces",
-			    'stimulus': face_number,
-			    'correct': variable,
-			    'valence': "n/a",
-			    'valenceFollowing': IAPS_valence,
-			    'gender': face_gender,
-			    'response': face_response,
-			    'face_correct_response': face_correct_response,
-			    'sociality': "n/a",
-			    'groups': ones,
-			    'onset_trimmed': face_onset_time_trimmed,
-			    'Blocks':rows['Blocks']})
+				if face_correct == '1':
+					variable = 'Y'
+				elif face_correct == '0':
+					variable = 'N'
+				row_writer.writerow({'onset': face_onset_TTL_adjusted,
+				'duration': face_duration,
+				'Response_Time_Face': face_response_time,
+				'database': "faces",
+				'stimulus': face_number,
+				'correct': variable,
+				'valence': "n/a",
+				'valenceFollowing': IAPS_valence,
+				'gender': face_gender,
+				'response': face_response,
+				'face_correct_response': face_correct_response,
+				'sociality': "n/a",
+				'groups': ones,
+				'onset_trimmed': face_onset_time_trimmed,
+				'Blocks':rows['Blocks']})
 
 	def process_IAPS(self):
 		for i in range(1,4):
@@ -309,7 +483,7 @@ class ScanEprimeConverter:
 	# 	self.study_name = study_name
 	# 	self.subject_number = subject_number
 
-	def __init__(self, subject_number, study_name):
+	def __init__(self, study_name, subject_number):
 		self.scan_eprime_raw_dir = f"/study/{study_name}/raw-data/scan_eprime/data/"
 		self.scan_eprime_output_dir = f"/study/{study_name}/processed_data/"
 		self.study_name = study_name
@@ -339,7 +513,7 @@ class ScanEprimeConverter:
 
 class NiftiRotator:
 
-	def __init__(self, subject_number, study_name):
+	def __init__(self, study_name, subject_number):
 		self.nifti_dir = f"/study/{study_name}/processed_data/"
 		self.study_name = study_name
 		self.subject_number = subject_number
@@ -374,12 +548,12 @@ class NiftiRotator:
 			os.system(f'fslreorient2std {target_nifti} {target_nifti}')
 
 	def process(self):
-		self.fix_task_fMRI_orientation("run-1", "task-ER", "task-EmotionRegulation")
-		self.rename_task_fMRI_json("run-1", "task-ER", "task-EmotionRegulation")
-		self.fix_task_fMRI_orientation("run-2", "task-ER", "task-EmotionRegulation")
-		self.rename_task_fMRI_json("run-2", "task-ER", "task-EmotionRegulation")
-		self.fix_task_fMRI_orientation("run-3", "task-ER", "task-EmotionRegulation")
-		self.rename_task_fMRI_json("run-3", "task-ER", "task-EmotionRegulation")
+		self.fix_task_fMRI_orientation("run-01", "task-ER", "task-EmotionRegulation")
+		self.rename_task_fMRI_json("run-01", "task-ER", "task-EmotionRegulation")
+		self.fix_task_fMRI_orientation("run-02", "task-ER", "task-EmotionRegulation")
+		self.rename_task_fMRI_json("run-02", "task-ER", "task-EmotionRegulation")
+		self.fix_task_fMRI_orientation("run-03", "task-ER", "task-EmotionRegulation")
+		self.rename_task_fMRI_json("run-03", "task-ER", "task-EmotionRegulation")
 		self.fix_resting_fMRI_orientation()
 		self.fix_dwi_orientation()
 
@@ -387,7 +561,7 @@ class NiftiRotator:
 
 class NiftiConverter:
 
-	def __init__(self, subject_number, study_name):
+	def __init__(self, study_name, subject_number):
 		
 		self.nifti_dir = f"/study/{study_name}/processed_data/"
 		self.raw_dir = f"/study/{study_name}/raw-data/"
@@ -488,16 +662,4 @@ class NiftiConverter:
 				scan_type = "asl"
 				os.makedirs(self.nifti_dir + self.subject_dir + "/asl/", exist_ok=True)
 				self.convert(scan, scan_type, self.subject_dir, scan_name)
-
-# nifti_converter = NiftiConverter()
-# nifti_converter.process()
-# rotator = NiftiRotator("001")
-# rotator.process()
-# eprime_converter = ScanEprimeConverter("001")
-# eprime_converter.process()
-# eprime_divider = ScanEprimeDivider("001")
-# eprime_divider.process()
-# onset_creator = OnsetCreator("001")
-# onset_creator.process()
-
 
