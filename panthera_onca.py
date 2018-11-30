@@ -3,7 +3,7 @@
 """testr.py: Updating the original nueroimaging processing pipeline"""
 
 __author__ = "David Lee"
-__credits__ = ["David Lee", "Micheal Kelly", "Nate Vack", "Jeanette Mumford"]
+__credits__ = ["David Lee", "Micheal Kelly", "Jeanette Mumford", "Nate Vack"]
 __version__ = "1.0"
 __maintainer__ = "David Lee"
 __email__ = "david.s.lee@wisc.edu"
@@ -16,21 +16,19 @@ import pandas as pd
 import shutil
 
 # TO DO
-# 2. fix bias correction....
-# 3. add print statements in general
-# 4. all paths need to be changed (make it more global?)
-# 5. qa all the outputs. probably just compare and contrast with the old one
+# 1. add print statements in general
+# 2. qa all the outputs. probably just compare and contrast with the old one
 
 class MotionEvaluator:
 	def __init__(self, study_name, subject_number):
-		self.input_dir = f"/study/{study_name}/processed_data/"
-		self.output_dir = f"/study/{study_name}/processed_data/"
+		self.input_dir = f"/study/{study_name}/processed_data/{study_name.upper()}_Imaging/"
+		self.output_dir = f"/study/{study_name}/processed_data/{study_name.upper()}_Imaging_Analysis/"
 		self.study_name = study_name
 		self.subject_number = subject_number
 		self.subject_dir = "sub-" + subject_number
 
 	def identify_qa_directory(self):
-		qa_dir = f'{self.input_dir}{self.subject_dir}/func/QA'
+		qa_dir = f'{self.output_dir}{self.subject_dir}/func/QA'
 		return qa_dir
 
 	def create_qa_directory(self):
@@ -80,8 +78,8 @@ class MotionEvaluator:
 class VolumeTrimmer:
 
 	def __init__(self, study_name, subject_number):
-		self.input_dir = f"/study/{study_name}/processed_data/"
-		self.output_dir = f"/study/{study_name}/processed_data/"
+		self.input_dir = f"/study/{study_name}/processed_data/{study_name.upper()}_Imaging/"
+		self.output_dir = f"/study/{study_name}/processed_data/{study_name.upper()}_Imaging_Analysis/"
 		self.study_name = study_name
 		self.subject_number = subject_number
 		self.subject_dir = "sub-" + subject_number
@@ -90,6 +88,10 @@ class VolumeTrimmer:
 		infile = f'{self.input_dir}{self.subject_dir}/func/{self.subject_dir}_task-{task_type}_run-0{run_number}_bold.nii.gz'
 		infile = infile[:-7]
 		return infile
+
+	def create_output_directory(self):
+		output_dir = f'{self.output_dir}{self.subject_dir}/func'
+		os.makedirs(output_dir, exist_ok=True)
 
 	def identify_task_fmri_trimmed_file(self, task_type, run_number):
 		outfile = f'{self.output_dir}{self.subject_dir}/func/{self.subject_dir}_task-{task_type}_run-0{run_number}_bold.nii.gz'
@@ -118,14 +120,15 @@ class VolumeTrimmer:
 		os.system(f'fslroi {infile} {outfile} {number_volume} -1')
 
 	def process(self):
+		self.create_output_directory()
 		self.trim_task_fmri_volumes()
 		self.trim_resting_fmri_volumes()		
 
 class BiasCorrector:
 
 	def __init__(self, study_name, subject_number):
-		self.input_dir = f"/study/{study_name}/processed_data/"
-		self.output_dir = f"/study/{study_name}/processed_data/"
+		self.input_dir = f"/study/{study_name}/processed_data/{study_name.upper()}_Imaging/"
+		self.output_dir = f"/study/{study_name}/processed_data/{study_name.upper()}_Imaging_Analysis/"
 		self.study_name = study_name
 		self.subject_number = subject_number
 		self.subject_dir = "sub-" + subject_number
@@ -139,11 +142,11 @@ class BiasCorrector:
 		return mask_outfile
 
 	def create_tempory_directory(self):
-		temporary_directory = f'{self.input_dir}{self.subject_dir}/anat/tmp/'
+		temporary_directory = f'{self.output_dir}{self.subject_dir}/anat/tmp/'
 		os.makedirs(temporary_directory, exist_ok=True)
 
 	def identify_temporary_directory(self):
-		temporary_directory = f'{self.input_dir}{self.subject_dir}/anat/tmp/'
+		temporary_directory = f'{self.output_dir}{self.subject_dir}/anat/tmp/'
 		return temporary_directory
 
 	def identify_first_iteration_output_file(self):
@@ -188,8 +191,8 @@ class BiasCorrector:
 class BSEBrainExtractor:
 
 	def __init__(self, study_name, subject_number):
-		self.input_dir = f"/study/{study_name}/processed_data/"
-		self.output_dir = f"/study/{study_name}/processed_data/"
+		self.input_dir = f"/study/{study_name}/processed_data/{study_name.upper()}_Imaging/"
+		self.output_dir = f"/study/{study_name}/processed_data/{study_name.upper()}_Imaging_Analysis/"
 		self.study_name = study_name
 		self.subject_number = subject_number
 		self.subject_dir = "sub-" + subject_number
@@ -238,8 +241,8 @@ class BSEBrainExtractor:
 class BetBrainExtractor:
 
 	def __init__(self, study_name, subject_number):
-		self.input_dir = f"/study/{study_name}/processed_data/"
-		self.output_dir = f"/study/{study_name}/processed_data/"
+		self.input_dir = f"/study/{study_name}/processed_data/{study_name.upper()}_Imaging/"
+		self.output_dir = f"/study/{study_name}/processed_data/{study_name.upper()}_Imaging_Analysis/"
 		self.study_name = study_name
 		self.subject_number = subject_number
 		self.subject_dir = "sub-" + subject_number
@@ -262,6 +265,10 @@ class BetBrainExtractor:
 		infile = f'{self.input_dir}{self.subject_dir}/anat/{self.subject_dir}_T1w.nii.gz'
 		return infile
 
+	def create_bet_output_directory(self):
+		bet_output_dir = f'{self.output_dir}{self.subject_dir}/anat'
+		os.makedirs(bet_output_dir, exist_ok = True)
+
 	def identify_bet_output_file(self):
 		bet_outfile = f'{self.output_dir}{self.subject_dir}/anat/{self.subject_dir}_T1w_brain.nii.gz'
 		return bet_outfile
@@ -271,6 +278,7 @@ class BetBrainExtractor:
 
 	def process(self):
 		infile = self.identify_input_file()
+		self.create_bet_output_directory()
 		outfile = self.identify_bet_output_file()
 		self.skull_strip_bet(infile, outfile)
 
@@ -284,9 +292,9 @@ class OnsetCreator:
 	# 	self.subject_number = subject_number
 
 	def __init__(self, study_name, subject_number):
-		self.scan_eprime_by_run_dir = f"/study/{study_name}/processed_data/"
+		self.scan_eprime_by_run_dir = f"/study/{study_name}/processed_data/Temporary/Small/"
 		self.study_name = study_name
-		self.onset_dir = f"/study/{study_name}/processed_data/"
+		self.onset_dir = f"/study/{study_name}/processed_data/{study_name.upper()}_Imaging/"
 		self.subject_number = subject_number
 
 	def identify_target_data(self, task_number):
@@ -332,8 +340,8 @@ class ScanEprimeDivider:
 
 
 	def __init__(self, study_name, subject_number):
-		self.scan_eprime_dir = f"/study/{study_name}/processed_data/"
-		self.scan_eprime_by_run_output_dir = f"/study/{study_name}/processed_data/"
+		self.scan_eprime_dir = f"/study/{study_name}/processed_data/Temporary/Big/"
+		self.scan_eprime_by_run_output_dir = f"/study/{study_name}/processed_data/Temporary/Small/"
 		self.study_name = study_name
 		self.subject_number = subject_number
 
@@ -485,7 +493,7 @@ class ScanEprimeConverter:
 
 	def __init__(self, study_name, subject_number):
 		self.scan_eprime_raw_dir = f"/study/{study_name}/raw-data/scan_eprime/data/"
-		self.scan_eprime_output_dir = f"/study/{study_name}/processed_data/"
+		self.scan_eprime_output_dir = f"/study/{study_name}/processed_data/Temporary/Big/"
 		self.study_name = study_name
 		self.subject_number = subject_number
 
@@ -498,7 +506,7 @@ class ScanEprimeConverter:
 
 
 	def identify_target_raw_eprime(self):
-		infile = f'{self.scan_eprime_raw_dir}midus3_order[1-2]_eyetracking_v0[0-2]-{self.subject_number}-{self.subject_number}.txt'
+		infile = f'{self.scan_eprime_raw_dir}{self.study_name}_order[1-2]_eyetracking_v0[0-2]-{self.subject_number}-{self.subject_number}.txt'
 		return infile
 
 	def set_outfile_name(self):
@@ -514,7 +522,7 @@ class ScanEprimeConverter:
 class NiftiRotator:
 
 	def __init__(self, study_name, subject_number):
-		self.nifti_dir = f"/study/{study_name}/processed_data/"
+		self.nifti_dir = f"/study/{study_name}/{study_name.upper()}_Imaging/"
 		self.study_name = study_name
 		self.subject_number = subject_number
 		self.subject_dir = "sub-" + subject_number
@@ -563,12 +571,13 @@ class NiftiConverter:
 
 	def __init__(self, study_name, subject_number):
 		
-		self.nifti_dir = f"/study/{study_name}/processed_data/"
+		self.nifti_dir = f"/study/{study_name}/processed_data/{study_name.upper()}_Imaging/"
 		self.raw_dir = f"/study/{study_name}/raw-data/"
 		self.study_name = study_name
 		self.subject_number = subject_number
 		self.subject_dir = "sub-" + subject_number
 		self.subject_dicom_path = self.raw_dir + subject_number
+
 
 	# def inspect_dicoms(self):
 	# 	# raw DICOMs in a set
@@ -625,19 +634,19 @@ class NiftiConverter:
 
 			if scan_name == "task-ER_run-1_bold":
 				scan_type = "func"
-				new_scan_name = "task-ER_run-01_bold"
+				new_scan_name = "task-EmotionRegulation_run-01_bold"
 				os.makedirs(self.nifti_dir + self.subject_dir + "/func/", exist_ok=True)
 				self.convert(scan, scan_type, self.subject_dir, new_scan_name)
 
 			if scan_name == "task-ER_run-2_bold":
 				scan_type = "func"
-				new_scan_name = "task-ER_run-02_bold"
+				new_scan_name = "task-EmotionRegulation_run-02_bold"
 				os.makedirs(self.nifti_dir + self.subject_dir + "/func/", exist_ok=True)
 				self.convert(scan, scan_type, self.subject_dir, new_scan_name)
 
 			if scan_name == "task-ER_run-3_bold":
 				scan_type = "func"
-				new_scan_name = "task-ER_run-03_bold"
+				new_scan_name = "task-EmotionRegulation_run-03_bold"
 				os.makedirs(self.nifti_dir + self.subject_dir + "/func/", exist_ok=True)
 				self.convert(scan, scan_type, self.subject_dir, new_scan_name)
 
