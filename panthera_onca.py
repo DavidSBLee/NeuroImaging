@@ -625,18 +625,21 @@ class NiftiConverter:
 
 			if scan_name == "task-ER_run-1_bold":
 				scan_type = "func"
+				new_scan_name = "task-ER_run-01_bold"
 				os.makedirs(self.nifti_dir + self.subject_dir + "/func/", exist_ok=True)
-				self.convert(scan, scan_type, self.subject_dir, scan_name)
+				self.convert(scan, scan_type, self.subject_dir, new_scan_name)
 
 			if scan_name == "task-ER_run-2_bold":
 				scan_type = "func"
+				new_scan_name = "task-ER_run-02_bold"
 				os.makedirs(self.nifti_dir + self.subject_dir + "/func/", exist_ok=True)
-				self.convert(scan, scan_type, self.subject_dir, scan_name)
+				self.convert(scan, scan_type, self.subject_dir, new_scan_name)
 
 			if scan_name == "task-ER_run-3_bold":
 				scan_type = "func"
+				new_scan_name = "task-ER_run-03_bold"
 				os.makedirs(self.nifti_dir + self.subject_dir + "/func/", exist_ok=True)
-				self.convert(scan, scan_type, self.subject_dir, scan_name)
+				self.convert(scan, scan_type, self.subject_dir, new_scan_name)
 
 			if scan_name == "task-rest_bold":
 				scan_type = "func"
