@@ -629,8 +629,9 @@ class NiftiConverter:
 
 			if scan_name == "ORIG_T1w": # should be 'ORIG_T1w' for scans with pure-filtered T1w's
 				scan_type = "anat"
+				new_scan_name = "T1w"
 				os.makedirs(self.nifti_dir + self.subject_dir + "/anat/", exist_ok=True)
-				self.convert(scan, scan_type, self.subject_dir, scan_name)
+				self.convert(scan, scan_type, self.subject_dir, new_scan_name)
 
 			if scan_name == "task-ER_run-1_bold":
 				scan_type = "func"
