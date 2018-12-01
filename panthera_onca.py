@@ -627,7 +627,7 @@ class NiftiConverter:
 		for scan in scans:
 			scan_name = self.extract_scan_info(scan)
 
-			if scan_name == "T1w": # should be 'ORIG_T1w' for scans with pure-filtered T1w's
+			if scan_name == "ORIG_T1w": # should be 'ORIG_T1w' for scans with pure-filtered T1w's
 				scan_type = "anat"
 				os.makedirs(self.nifti_dir + self.subject_dir + "/anat/", exist_ok=True)
 				self.convert(scan, scan_type, self.subject_dir, scan_name)
